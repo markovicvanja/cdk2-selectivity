@@ -22,7 +22,8 @@
     14  Sticky bottom bar and the Contents sheet
     15  Desktop (>= 900px)
     16  Animation utilities
-    17  Print
+    17  Reading mode (Plain / Full)
+    18  Print
 
    No dark mode in v1. site_plan.md §7: the generated matplotlib SVGs are
    external <img> with hard-coded near-black strokes, so they cannot follow a
@@ -1400,8 +1401,63 @@ figcaption b, figcaption strong { color: var(--ink); }
 .center { text-align: center; }
 
 
+/* Two callouts side by side on desktop, stacked on a phone. Used once, for
+   inherited vs added in the background section. */
+.two-up { display: grid; gap: var(--sp-2); }
+@media (min-width: 700px) { .two-up { grid-template-columns: 1fr 1fr; } }
+
+
 /* -----------------------------------------------------------------------------
-   17  PRINT
+   17  READING MODE
+   Plain is the default: the narrative, the figures and the headline numbers.
+   Full adds everything the disclosures hold, plus the two method subsections
+   that exist only to justify the numbers. Set on <html> before first paint.
+   -------------------------------------------------------------------------- */
+
+html[data-mode="plain"] .disclosure,
+html[data-mode="plain"] .disclosure-controls,
+html[data-mode="plain"] [data-tech] { display: none; }
+
+.modeswitch {
+  display: flex;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--panel);
+}
+.modeswitch__btn {
+  flex: 1;
+  min-height: 34px;
+  padding: 0 var(--sp-1);
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  cursor: pointer;
+}
+.modeswitch__btn:hover { color: var(--ink); }
+.modeswitch__btn[aria-pressed="true"] {
+  background: var(--bg);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+.modeswitch__hint {
+  margin: var(--sp-1) 0 var(--sp-2);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--faint);
+}
+
+/* In the contents sheet the switch is a full-width row, not a sidebar widget. */
+.sheet .modeswitch { margin: 0 var(--gutter); }
+.sheet .modeswitch__btn { min-height: var(--tap); }
+.sheet .modeswitch__hint { margin: var(--sp-1) var(--gutter) var(--sp-2); }
+
+
+/* -----------------------------------------------------------------------------
+   18  PRINT
    A PI may well print this. Drop the furniture, keep the science, and expand
    every accordion.
    -------------------------------------------------------------------------- */
@@ -1453,4 +1509,10 @@ figcaption b, figcaption strong { color: var(--ink); }
   a { color: #000; text-decoration: underline; }
 
   .card, .table th, .table td { border-color: #999; }
+
+  /* Print is always the full document, whatever the reader was viewing. */
+  html[data-mode="plain"] .disclosure,
+  html[data-mode="plain"] .disclosure-controls,
+  html[data-mode="plain"] [data-tech] { display: revert; }
+  .modeswitch, .modeswitch__hint { display: none !important; }
 }

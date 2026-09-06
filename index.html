@@ -30,11 +30,12 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
 <!-- Gates the reveal animation (components.md §1). Without JS nothing is ever hidden. -->
-<script>document.documentElement.classList.add('js');</script>
+<script>(function(d){d.classList.add('js');var m;try{m=localStorage.getItem('mode');}catch(e){}
+d.setAttribute('data-mode', m === 'full' ? 'full' : 'plain');}(document.documentElement));</script>
 <!-- The only JS-only controls on the page. Hidden when JS is off so no dead buttons ship; the
      bottom bar then falls back to two columns (About · LinkedIn) instead of leaving a hole.
      Everything else (all seven sections, every <details>, every anchor) works without JS. -->
-<style>html:not(.js) [data-lightbox],html:not(.js) [data-expand-all],html:not(.js) [data-collapse-all],html:not(.js) [data-copy],html:not(.js) [data-open-contents]{display:none}
+<style>html:not(.js) .modeswitch,html:not(.js) .modeswitch__hint,html:not(.js) [data-lightbox],html:not(.js) [data-expand-all],html:not(.js) [data-collapse-all],html:not(.js) [data-copy],html:not(.js) [data-open-contents]{display:none}
 html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 
 <link rel="stylesheet" href="styles.css">
@@ -47,9 +48,16 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 
   <nav class="sidebar" aria-label="Sections">
     <p class="sidebar__brand">Physics-Guided Generative Design for CDK2 Selectivity</p>
+    <div class="modeswitch" role="group" aria-label="Reading mode">
+      <button class="modeswitch__btn" type="button" data-set-mode="plain">Plain</button>
+      <button class="modeswitch__btn" type="button" data-set-mode="full">Full</button>
+    </div>
+    <p class="modeswitch__hint" data-mode-hint></p>
+
     <a class="btn btn--primary" href="https://www.linkedin.com/in/vanja-markovi%C4%87-507b88348/">LinkedIn</a>
     <ul class="sidebar__list">
       <li><a class="sidebar__link" href="#overview">Overview</a></li>
+      <li><a class="sidebar__link" href="#background">Why this matters</a></li>
       <li><a class="sidebar__link" href="#signal">Building the selectivity signal</a></li>
       <li><a class="sidebar__link" href="#selection">How selection works</a></li>
       <li><a class="sidebar__link" href="#experiment">The experiment</a></li>
@@ -122,7 +130,119 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
   </div>
 </section>
 
-<!-- ================= 02-signal ================= -->
+<!-- ================= 02-background ================= -->
+<section class="section" id="background" aria-labelledby="background-h">
+  <div class="col">
+
+    <p class="section-eyebrow">Context: the problem</p>
+    <h2 class="section-title" id="background-h">
+      <span class="section-title__mark" aria-hidden="true">🎯</span>
+      Why this matters
+    </h2>
+
+    <p class="lede">Before the method: what CDK2 is, why a drug that hits it is worth having, and
+      why hitting <i>only</i> it is the hard part.</p>
+
+
+    <!-- ===== 2.1 ============================================================ -->
+
+    <h3 class="subsection" id="bg-cdk2">CDK2 and the cell cycle</h3>
+
+    <p>A cell decides whether to divide at a small number of checkpoints, and those decisions are
+      carried out by enzymes called <b>kinases</b>: proteins that attach a phosphate group to another
+      protein and, in doing so, switch it on or off. <b>CDK2</b>, cyclin-dependent kinase 2, is one
+      of the kinases that pushes a cell through the transition from growth into DNA replication.</p>
+
+    <p>In many tumours that switch is stuck on. Where the machinery upstream of CDK2 is amplified or
+      broken, the cell keeps entering division when it should not, and CDK2 activity is part of what
+      keeps it going. That makes CDK2 a plausible <b>drug target</b>: block the enzyme, and the
+      pathway that depends on it stalls. Interest sharpened once CDK4/6 inhibitors reached the clinic
+      and tumours were observed to escape them through routes that run through CDK2.</p>
+
+
+    <!-- ===== 2.2 ============================================================ -->
+
+    <h3 class="subsection" id="bg-selectivity">The problem: kinases all look alike inside</h3>
+
+    <p>Almost every kinase inhibitor in use works the same way: it sits in the pocket where the
+      enzyme would normally bind <b>ATP</b>, the molecule kinases consume to do their job. Blocking
+      that pocket blocks the enzyme.</p>
+
+    <p>The difficulty is that the human genome encodes on the order of five hundred protein kinases,
+      and that ATP pocket is the part of them that is <em>most</em> alike. A molecule shaped to fit
+      CDK2's pocket will, by construction, fit a good number of its relatives too. Those relatives
+      have their own jobs in the cell, so binding them is not a neutral event: unintended kinase
+      activity is a recognised source of toxicity, of dose limits that keep a drug from reaching a
+      useful concentration, and of compounds that fail late and expensively.</p>
+
+    <div class="callout">
+      <strong class="callout__title">Potency is not the goal. Selectivity is.</strong>
+      <p>"Binds CDK2 strongly" is easy to ask a computer for and easy to measure. What a project
+      actually needs is <b>binds CDK2 strongly <i>and</i> the neighbouring kinases weakly</b>, which is
+      a statement about where the molecule must <em>not</em> go. An objective that only rewards
+      affinity cannot express that, because nothing in it ever counts a bad outcome.</p>
+    </div>
+
+
+    <!-- ===== 2.3 ============================================================ -->
+
+    <h3 class="subsection" id="bg-goal">What a project like this is trying to produce</h3>
+
+    <p>Nothing here is a drug, and nothing here has been near a laboratory. The chemical space a
+      medicinal chemist could plausibly draw is far larger than the number of molecules anyone can
+      afford to make and assay. So the real product of a computational stage is a <b>shortlist</b>:
+      a few candidate molecules that are worth the cost of synthesis and testing, chosen out of tens
+      of thousands that are not.</p>
+
+    <p>Every filter applied before that shortlist changes which molecules survive to be looked at.
+      The question this work asks is narrow and deliberately so: <b>if the generator is told about
+      off-target binding, does it keep different molecules?</b> Not "are they better drugs", which
+      needs a laboratory. Whether the preference shows up at all, and what it costs, is
+      what a computer can settle.</p>
+
+
+    <!-- ===== 2.4 ============================================================ -->
+
+    <h3 class="subsection" id="bg-contribution">What ALGen is, and what this work adds</h3>
+
+    <p><b>ALGen is not new here.</b> It is an existing machine-learning framework, built and published
+      by the group this thesis was carried out in, and it is the starting point rather than the
+      contribution. In outline: a neural network that has learned to read and write molecules as text
+      proposes new ones; physics-based <b>docking</b> scores how well each proposal fits a protein
+      pocket; the best-scoring molecules are added back into the network's training set, so the next
+      round is generated from better chemistry than the last. Generate, score, keep, repeat: an
+      <i>active-learning</i> loop with a physics model in it.</p>
+
+    <p>As published, that loop optimised for <b>one</b> protein. It rewarded binding CDK2 and had no
+      way to express, or even to see, that a molecule also bound something else. A later extension
+      handled several proteins at once, but by rewarding binding at all of them. That is multi-target
+      affinity, a different objective from selectivity and in places the opposite one.</p>
+
+    <div class="two-up">
+      <div class="callout">
+        <strong class="callout__title">Inherited, unchanged</strong>
+        <p>The generative model, the chemistry filters, the active-learning loop, the CDK2 docking
+        setup, and the run configuration. All fixed, so that anything observed downstream is
+        attributable.</p>
+      </div>
+      <div class="callout callout--benefit">
+        <strong class="callout__title">Added in this work</strong>
+        <p>A validated <b>antitarget panel</b> of related kinases with docking grids and a common
+        scale, because the measurement had to be built before it could be optimised, and one new
+        <b>antitarget term</b> in the score that decides which molecules the loop keeps.</p>
+      </div>
+    </div>
+
+    <p>The experiment is then as clean as it can be made: run the loop twice from the same starting
+      chemistry, with that one term switched on in one run and off in the other, and compare what each
+      run selected. <a href="#experiment">Two runs, one difference</a>.</p>
+
+    <a class="jump" href="#signal">How the off-target signal was built ↓</a>
+
+  </div>
+</section>
+
+<!-- ================= 03-signal ================= -->
 <section class="section" id="signal" aria-labelledby="signal-h">
   <div class="col">
 
@@ -851,6 +971,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 
     <!-- ===== 2.6 ============================================================ -->
 
+    <div data-tech>
     <h3 class="subsection" id="one-scale">Putting every receptor on one scale</h3>
 
     <p class="lede">A docking score of −8 at one receptor does not mean the same thing as −8 at
@@ -945,13 +1066,14 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
         </ul>
       </div>
     </details>
+    </div><!-- /data-tech: one-scale -->
 
     <a class="jump" href="#selection">See where this score enters the generator ↓</a>
 
   </div>
 </section>
 
-<!-- ================= 03-selection ================= -->
+<!-- ================= 04-selection ================= -->
 <section class="section" id="selection" aria-labelledby="selection-h">
   <div class="col">
 
@@ -1321,7 +1443,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
   </div>
 </section>
 
-<!-- ================= 04-experiment ================= -->
+<!-- ================= 05-experiment ================= -->
 <section class="section" id="experiment" aria-labelledby="experiment-h">
   <div class="col">
 
@@ -1401,6 +1523,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     </details>
 
 
+    <div data-tech>
     <h3 class="subsection" id="four-populations">The four populations</h3>
 
     <p>Each block produces four distinct sets of molecules, and almost every number reported later
@@ -1481,6 +1604,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
       </div>
     </details>
 
+    </div><!-- /data-tech: four-populations -->
 
     <h3 class="subsection" id="block-one">Why block 1 is the controlled comparison</h3>
 
@@ -1565,7 +1689,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
   </div>
 </section>
 
-<!-- ================= 05-results ================= -->
+<!-- ================= 06-results ================= -->
 <section class="section" id="results" aria-labelledby="results-h">
   <div class="col">
 
@@ -2316,7 +2440,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 
 </section>
 
-<!-- ================= 06-limits ================= -->
+<!-- ================= 07-limits ================= -->
 <section class="section" id="limits" aria-labelledby="limits-h">
   <div class="col">
 
@@ -2422,7 +2546,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
   </div>
 </section>
 
-<!-- ================= 07-about ================= -->
+<!-- ================= 08-about ================= -->
 <section class="section" id="about" aria-labelledby="about-h">
   <div class="col">
 
@@ -2627,10 +2751,25 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     <h2 class="sheet__title" id="contents-title">Contents</h2>
     <button class="sheet__close" type="button" aria-label="Close">✕</button>
   </div>
+  <div class="modeswitch" role="group" aria-label="Reading mode">
+      <button class="modeswitch__btn" type="button" data-set-mode="plain">Plain</button>
+      <button class="modeswitch__btn" type="button" data-set-mode="full">Full</button>
+    </div>
+    <p class="modeswitch__hint" data-mode-hint></p>
+
   <ul class="sheet__list">
     <li><a class="sheet__link" href="#overview"><span class="sheet__num">1</span>Overview</a></li>
 
-    <li><a class="sheet__link" href="#signal"><span class="sheet__num">2</span>Building the selectivity signal</a>
+    <li><a class="sheet__link" href="#background"><span class="sheet__num">2</span>Why this matters</a>
+      <ul class="sheet__sub">
+        <li><a class="sheet__sublink" href="#bg-cdk2">CDK2 and the cell cycle</a></li>
+        <li><a class="sheet__sublink" href="#bg-selectivity">Kinases all look alike inside</a></li>
+        <li><a class="sheet__sublink" href="#bg-goal">What this is trying to produce</a></li>
+        <li><a class="sheet__sublink" href="#bg-contribution">What ALGen is, what this adds</a></li>
+      </ul>
+    </li>
+
+    <li><a class="sheet__link" href="#signal"><span class="sheet__num">3</span>Building the selectivity signal</a>
       <ul class="sheet__sub">
         <li><a class="sheet__sublink" href="#why-hard">Why CDK2 selectivity is hard</a></li>
         <li><a class="sheet__sublink" href="#antitargets">Choosing the ten antitargets</a></li>
@@ -2641,7 +2780,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
       </ul>
     </li>
 
-    <li><a class="sheet__link" href="#selection"><span class="sheet__num">3</span>How selection works</a>
+    <li><a class="sheet__link" href="#selection"><span class="sheet__num">4</span>How selection works</a>
       <ul class="sheet__sub">
         <li><a class="sheet__sublink" href="#algen-loop">The ALGen loop</a></li>
         <li><a class="sheet__sublink" href="#score-j">What the score rewards</a></li>
@@ -2649,7 +2788,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
       </ul>
     </li>
 
-    <li><a class="sheet__link" href="#experiment"><span class="sheet__num">4</span>The experiment</a>
+    <li><a class="sheet__link" href="#experiment"><span class="sheet__num">5</span>The experiment</a>
       <ul class="sheet__sub">
         <li><a class="sheet__sublink" href="#two-runs">Two runs, one difference</a></li>
         <li><a class="sheet__sublink" href="#four-populations">The four populations</a></li>
@@ -2657,7 +2796,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
       </ul>
     </li>
 
-    <li><a class="sheet__link" href="#results"><span class="sheet__num">5</span>Results</a>
+    <li><a class="sheet__link" href="#results"><span class="sheet__num">6</span>Results</a>
       <ul class="sheet__sub">
         <li><a class="sheet__sublink" href="#results-ablation">Selection changes</a></li>
         <li><a class="sheet__sublink" href="#results-within-pool">Inside each pool</a></li>
@@ -2666,9 +2805,9 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
       </ul>
     </li>
 
-    <li><a class="sheet__link" href="#limits"><span class="sheet__num">6</span>Limits and next steps</a></li>
+    <li><a class="sheet__link" href="#limits"><span class="sheet__num">7</span>Limits and next steps</a></li>
 
-    <li><a class="sheet__link" href="#about"><span class="sheet__num">7</span>About and resources</a>
+    <li><a class="sheet__link" href="#about"><span class="sheet__num">8</span>About and resources</a>
       <ul class="sheet__sub">
         <li><a class="sheet__sublink" href="#about-resources">Resources</a></li>
         <li><a class="sheet__sublink" href="#about-cite">Cite this work</a></li>
@@ -2682,6 +2821,27 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
    the sheet's links are the same anchors as the sidebar's, and nothing is ever hidden. */
 (function () {
   var $ = function (sel, ctx) { return (ctx || document).querySelectorAll(sel); };
+
+  /* ---------------------------------------------------------------------------
+     Reading mode. Plain shows the narrative; Full adds every disclosure and the
+     two method subsections marked data-tech. <html data-mode> is already set by
+     the boot script in <head>, so this only wires the two switches to it. */
+  var HINT = {
+    plain: 'Story only. Switch to Full for protocols, thresholds and statistics.',
+    full:  'Everything, including protocols, thresholds and statistics.'
+  };
+  function setMode(mode, remember) {
+    document.documentElement.setAttribute('data-mode', mode);
+    $('[data-set-mode]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.setMode === mode));
+    });
+    $('[data-mode-hint]').forEach(function (el) { el.textContent = HINT[mode]; });
+    if (remember) { try { localStorage.setItem('mode', mode); } catch (e) {} }
+  }
+  $('[data-set-mode]').forEach(function (b) {
+    b.addEventListener('click', function () { setMode(b.dataset.setMode, true); });
+  });
+  setMode(document.documentElement.getAttribute('data-mode'), false);
 
   /* Contents sheet: native <dialog> gives backdrop, Escape, focus trap and focus return. */
   var sheet = document.getElementById('contents');
@@ -2771,6 +2931,12 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     var el = hash && document.getElementById(hash.slice(1));
     if (!el) return;
     var opened = false;
+    /* A link can point into content that Plain mode hides. Honour the link. */
+    if (el.closest('.disclosure, [data-tech]') &&
+        document.documentElement.getAttribute('data-mode') === 'plain') {
+      setMode('full', false);
+      opened = true;
+    }
     for (var d = el.closest('details'); d; d = d.parentElement.closest('details')) {
       if (!d.open) { d.open = true; opened = true; }
     }
