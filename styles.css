@@ -455,6 +455,10 @@ abbr[title] { text-decoration: underline dotted; cursor: help; }
 .hero__actions { align-items: center; gap: var(--sp-2); }
 .btn__meta { font-weight: 400; font-size: var(--fs-small); opacity: 0.85; }
 
+/* The travelling dash on a loop diagram. Give the <path> pathLength="100" in
+   the markup so the dash maths is resolution-free. Animated in §16. */
+.loop-trace { stroke-dasharray: 16 84; stroke-dashoffset: 0; }
+
 /* A forward link to another section: "see the controlled experiment ↓". */
 .jump {
   display: inline-flex;
@@ -1381,12 +1385,9 @@ figcaption b, figcaption strong { color: var(--ink); }
     to   { transform: translateX(0); }
   }
 
-  /* --- the ALGen loop trace ---------------------------------------------
-     A dash runs once around the loop path, continuously. Give the <path>
-     pathLength="100" in the markup so the dash maths is resolution-free. */
-  .loop-trace {
-    stroke-dasharray: 16 84;
-    stroke-dashoffset: 0;
+  /* --- loop traces (the ALGen loop, the cell cycle) -----------------------
+     Gated on .is-visible, like every other animation here.
+  .js .reveal.is-visible .loop-trace {
     /* Three passes, then it settles. An indefinite loop in the corner of the eye
        competes with the body text the reader is trying to read. */
     animation: loop-trace 4.5s linear 3;
