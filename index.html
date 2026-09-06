@@ -35,7 +35,7 @@ d.setAttribute('data-mode', m === 'full' ? 'full' : 'plain');}(document.document
 <!-- The only JS-only controls on the page. Hidden when JS is off so no dead buttons ship; the
      bottom bar then falls back to two columns (About · LinkedIn) instead of leaving a hole.
      Everything else (all seven sections, every <details>, every anchor) works without JS. -->
-<style>html:not(.js) .modeswitch,html:not(.js) .modeswitch__hint,html:not(.js) [data-lightbox],html:not(.js) [data-expand-all],html:not(.js) [data-collapse-all],html:not(.js) [data-copy],html:not(.js) [data-open-contents]{display:none}
+<style>html:not(.js) .modeswitch,html:not(.js) [data-lightbox],html:not(.js) [data-expand-all],html:not(.js) [data-collapse-all],html:not(.js) [data-copy],html:not(.js) [data-open-contents]{display:none}
 html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 
 <link rel="stylesheet" href="styles.css">
@@ -48,11 +48,14 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 
   <nav class="sidebar" aria-label="Sections">
     <p class="sidebar__brand">Physics-Guided Generative Design for CDK2 Selectivity</p>
-    <div class="modeswitch" role="group" aria-label="Reading mode">
-      <button class="modeswitch__btn" type="button" data-set-mode="plain">Plain</button>
-      <button class="modeswitch__btn" type="button" data-set-mode="full">Full</button>
+    <div class="modeswitch">
+      <span class="modeswitch__label">Detail level</span>
+      <div class="modeswitch__track" role="group" aria-label="Detail level">
+        <button class="modeswitch__btn" type="button" data-set-mode="plain">Story</button>
+        <button class="modeswitch__btn" type="button" data-set-mode="full">Full detail</button>
+      </div>
+      <p class="modeswitch__hint" data-mode-hint></p>
     </div>
-    <p class="modeswitch__hint" data-mode-hint></p>
 
     <a class="btn btn--primary" href="https://www.linkedin.com/in/vanja-markovi%C4%87-507b88348/">LinkedIn</a>
     <ul class="sidebar__list">
@@ -2689,11 +2692,14 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     <h2 class="sheet__title" id="contents-title">Contents</h2>
     <button class="sheet__close" type="button" aria-label="Close">✕</button>
   </div>
-  <div class="modeswitch" role="group" aria-label="Reading mode">
-      <button class="modeswitch__btn" type="button" data-set-mode="plain">Plain</button>
-      <button class="modeswitch__btn" type="button" data-set-mode="full">Full</button>
+  <div class="modeswitch">
+      <span class="modeswitch__label">Detail level</span>
+      <div class="modeswitch__track" role="group" aria-label="Detail level">
+        <button class="modeswitch__btn" type="button" data-set-mode="plain">Story</button>
+        <button class="modeswitch__btn" type="button" data-set-mode="full">Full detail</button>
+      </div>
+      <p class="modeswitch__hint" data-mode-hint></p>
     </div>
-    <p class="modeswitch__hint" data-mode-hint></p>
 
   <ul class="sheet__list">
     <li><a class="sheet__link" href="#overview"><span class="sheet__num">1</span>Overview</a></li>
@@ -2765,8 +2771,8 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
      two method subsections marked data-tech. <html data-mode> is already set by
      the boot script in <head>, so this only wires the two switches to it. */
   var HINT = {
-    plain: 'Story only. Switch to Full for protocols, thresholds and statistics.',
-    full:  'Everything, including protocols, thresholds and statistics.'
+    plain: 'The narrative, the figures and the headline numbers.',
+    full:  'Adds every protocol, threshold and statistic.'
   };
   function setMode(mode, remember) {
     document.documentElement.setAttribute('data-mode', mode);

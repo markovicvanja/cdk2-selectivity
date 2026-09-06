@@ -971,6 +971,7 @@ figcaption b, figcaption strong { color: var(--ink); }
     padding: var(--sp-1);
     margin-bottom: var(--sp-1);
   }
+  .table--pairs caption { display: block; }
   .table--pairs td { border: 0; padding: 0.25rem 0; }
   .table--pairs td::before {
     content: attr(data-label);
@@ -1418,42 +1419,69 @@ html[data-mode="plain"] .disclosure,
 html[data-mode="plain"] .disclosure-controls,
 html[data-mode="plain"] [data-tech] { display: none; }
 
-.modeswitch {
-  display: flex;
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--panel);
+/* Segmented control. Never a flex item that can shrink: inside the sheet it is
+   a row in a flex column, and shrinking clips the labels off the buttons. */
+.modeswitch { flex: none; }
+
+.modeswitch__label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
 }
+
+.modeswitch__track {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+}
+
 .modeswitch__btn {
   flex: 1;
   min-height: 34px;
-  padding: 0 var(--sp-1);
+  padding: 0 0.5rem;
   border: 0;
+  border-radius: 999px;
   background: none;
   font: inherit;
   font-size: var(--fs-small);
+  font-weight: 600;
+  line-height: 1.1;
   color: var(--muted);
   cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
 }
+@media (prefers-reduced-motion: reduce) { .modeswitch__btn { transition: none; } }
 .modeswitch__btn:hover { color: var(--ink); }
 .modeswitch__btn[aria-pressed="true"] {
   background: var(--bg);
   color: var(--ink);
-  font-weight: 600;
-  box-shadow: inset 0 0 0 1px var(--rule);
+  box-shadow: 0 1px 2px rgba(22, 33, 46, 0.16);
 }
+
 .modeswitch__hint {
-  margin: var(--sp-1) 0 var(--sp-2);
+  margin: 0.5rem 0 0;
   font-size: 0.8125rem;
   line-height: 1.35;
   color: var(--faint);
 }
 
-/* In the contents sheet the switch is a full-width row, not a sidebar widget. */
-.sheet .modeswitch { margin: 0 var(--gutter); }
+/* In the contents sheet it is a banded row between the head and the list, and
+   the buttons are full tap targets. */
+.sheet .modeswitch {
+  padding: var(--sp-1) var(--gutter) var(--sp-2);
+  border-bottom: 1px solid var(--rule);
+}
 .sheet .modeswitch__btn { min-height: var(--tap); }
-.sheet .modeswitch__hint { margin: var(--sp-1) var(--gutter) var(--sp-2); }
+
+/* In the sidebar it sits under the brand, above the LinkedIn button. */
+.sidebar .modeswitch { margin-bottom: var(--sp-2); }
 
 
 /* -----------------------------------------------------------------------------
@@ -1514,5 +1542,5 @@ html[data-mode="plain"] [data-tech] { display: none; }
   html[data-mode="plain"] .disclosure,
   html[data-mode="plain"] .disclosure-controls,
   html[data-mode="plain"] [data-tech] { display: revert; }
-  .modeswitch, .modeswitch__hint { display: none !important; }
+  .modeswitch { display: none !important; }
 }
