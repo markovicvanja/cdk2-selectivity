@@ -581,7 +581,14 @@ abbr[title] { text-decoration: underline dotted; cursor: help; }
 /* A section-sized disclosure holding whole subsections rather than a footnote.
    It reads as a container, not as an aside: no panel fill on the body, the
    subsections inside keep their own rhythm, and its own summary is larger. */
-.disclosure--wide { border-left-color: var(--rule); background: transparent; }
+/* The wide variant wraps whole subsections, so it gets no box at all: the
+   tinted summary bar is affordance enough, and a 3px rule with the body
+   padded to 0 just crowds the text against it. */
+.disclosure--wide {
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+}
 .disclosure--wide > .disclosure__summary { font-size: var(--fs-h3); line-height: 1.35; }
 .disclosure--wide[open] > .disclosure__summary {
   background: var(--panel);
