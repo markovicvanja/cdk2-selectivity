@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<title>Physics-Guided Generative Design for CDK2 Selectivity</title>
+<title>Physics-Guided Generative Design for CDK2 Selectivity: Extending ALGen with an Antitarget Objective</title>
 <meta name="description" content="Adding explicit off-target docking information to a generative molecular workflow changes which molecules it keeps: all eight evaluated antitarget kinases shift toward weaker predicted binding, for a small cost in predicted CDK2 potency.">
 <meta name="author" content="Vanja Marković">
 
@@ -12,7 +12,7 @@
 <link rel="canonical" href="https://markovicvanja.github.io/cdk2-selectivity/">
 
 <meta property="og:type" content="article">
-<meta property="og:title" content="Physics-Guided Generative Design for CDK2 Selectivity">
+<meta property="og:title" content="Physics-Guided Generative Design for CDK2 Selectivity: Extending ALGen with an Antitarget Objective">
 <meta property="og:description" content="Antitarget-aware docking feedback in ALGen: a selection-level proof of concept.">
 <meta property="og:image" content="https://markovicvanja.github.io/cdk2-selectivity/share.png">
 <meta property="og:image:width" content="1200">
@@ -22,7 +22,7 @@
 <meta property="og:site_name" content="3rd Biology for Physics Conference poster companion">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Physics-Guided Generative Design for CDK2 Selectivity">
+<meta name="twitter:title" content="Physics-Guided Generative Design for CDK2 Selectivity: Extending ALGen with an Antitarget Objective">
 <meta name="twitter:description" content="Antitarget-aware docking feedback in ALGen.">
 <meta name="twitter:image" content="https://markovicvanja.github.io/cdk2-selectivity/share.png">
 <meta name="twitter:image:alt" content="Poster result block: the one-sentence claim, the three headline numbers, and the receptor-level effect chart.">
@@ -77,22 +77,30 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 <section class="section hero" id="overview" aria-labelledby="overview-h">
   <div class="col">
 
-    <!-- No eyebrow here. On a 390x844 phone the first screen has room for exactly the
-         title, the poster's hook and the three numbers; the ~54px an eyebrow costs is
-         what pushes the third stat card below the fold. -->
+    <!-- Masthead order, as on the poster itself: what this is, who did it, where they
+         are, then the artefact. No eyebrow: the ~54px it costs comes straight off the
+         numbers below. -->
     <h1 id="overview-h">Physics-Guided Generative Design for CDK2 Selectivity</h1>
 
-    <!-- The poster's own line, repeated verbatim: a visitor who scanned the QR code read
-         this thirty seconds ago, and it gives the non-poster reader the problem before
-         the numbers answer it. -->
-    <p class="hero__hook"><b>Potency ≠ Selectivity.</b> Related kinases share the same ATP
-      pocket, so a molecule tuned only for CDK2 will often hit them too.</p>
+    <p class="hero__subtitle">Extending ALGen with an antitarget objective</p>
+
+    <p class="byline"><strong>Vanja Marković</strong><sup>1,2</sup> · Júlia Vilalta-Mor<sup>1</sup>
+      · Violeta Basten<sup>1</sup> · Víctor Guallar<sup>1</sup></p>
+
+    <p class="affiliations"><sup>1</sup> Barcelona Supercomputing Center ·
+      <sup>2</sup> Universitat de Barcelona</p>
 
     <div class="btn-row hero__actions">
       <a class="btn btn--primary" href="poster.pdf" download>
         <span aria-hidden="true">↓</span>Download the poster
         <span class="btn__meta">PDF, 200 KB</span></a>
     </div>
+
+    <!-- The poster's own line, repeated verbatim: a visitor who scanned the QR code read
+         this thirty seconds ago, and it gives the non-poster reader the problem before
+         the numbers answer it. -->
+    <p class="hero__hook"><b>Potency ≠ Selectivity.</b> Related kinases share the same ATP
+      pocket, so a molecule tuned only for CDK2 will often hit them too.</p>
 
     <!-- The three numbers come before the prose. The full claim is the lede below; a
          reader standing at the poster should not have to scroll to reach a result. -->
@@ -131,12 +139,6 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
          author card in the last section carries both, so the first screen stays evidence only. -->
 
     <p class="hero__scope">Docking-based, predicted selectivity. Selection-level proof of concept.</p>
-
-    <p class="byline"><strong>Vanja Marković</strong><sup>1,2</sup> · Júlia Vilalta-Mor<sup>1</sup>
-      · Violeta Basten<sup>1</sup> · Víctor Guallar<sup>1</sup></p>
-
-    <p class="affiliations"><sup>1</sup> Barcelona Supercomputing Center ·
-      <sup>2</sup> Universitat de Barcelona</p>
 
   </div>
 </section>

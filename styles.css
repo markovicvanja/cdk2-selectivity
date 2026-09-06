@@ -352,7 +352,21 @@ abbr[title] { text-decoration: underline dotted; cursor: help; }
    -------------------------------------------------------------------------- */
 
 .hero { padding-block: var(--sp-5) var(--sp-4); }
-.hero h1 { margin-bottom: var(--sp-3); }
+.hero h1 { margin-bottom: var(--sp-1); }
+
+/* The contribution, stated in one line under the title. Lighter than the title
+   and heavier than the byline, so the masthead reads title, subtitle, authors. */
+.hero__subtitle {
+  font-size: var(--fs-lede);
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.3;
+  margin-bottom: var(--sp-2);
+  text-wrap: balance;
+}
+.hero .byline { margin-bottom: 0.15rem; }
+.hero .affiliations { margin-bottom: var(--sp-3); }
+.hero .hero__actions { margin-bottom: var(--sp-3); }
 .hero .lede { margin-bottom: var(--sp-4); }
 
 /* The poster's hook, above the lede. Sized between body and lede so it reads as
