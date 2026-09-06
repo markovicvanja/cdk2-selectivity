@@ -1,0 +1,2794 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<title>Physics-Guided Generative Design for CDK2 Selectivity</title>
+<meta name="description" content="Adding explicit off-target docking information to a generative molecular workflow changes which molecules it keeps: all eight evaluated antitarget kinases shift toward weaker predicted binding, for a small cost in predicted CDK2 potency.">
+<meta name="author" content="Vanja Marković">
+
+<!-- Hosted at https://markovicvanja.github.io/cdk2-selectivity/ -->
+<link rel="canonical" href="https://markovicvanja.github.io/cdk2-selectivity/">
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="Physics-Guided Generative Design for CDK2 Selectivity">
+<meta property="og:description" content="Antitarget-aware docking feedback in ALGen: a selection-level proof of concept.">
+<meta property="og:image" content="https://markovicvanja.github.io/cdk2-selectivity/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Poster result block: the one-sentence claim, the three headline numbers, and the receptor-level effect chart.">
+<meta property="og:url" content="https://markovicvanja.github.io/cdk2-selectivity/">
+<meta property="og:site_name" content="3rd Biology for Physics Conference poster companion">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Physics-Guided Generative Design for CDK2 Selectivity">
+<meta name="twitter:description" content="Antitarget-aware docking feedback in ALGen.">
+<meta name="twitter:image" content="https://markovicvanja.github.io/cdk2-selectivity/share.png">
+<meta name="twitter:image:alt" content="Poster result block: the one-sentence claim, the three headline numbers, and the receptor-level effect chart.">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+<!-- Gates the reveal animation (components.md §1). Without JS nothing is ever hidden. -->
+<script>document.documentElement.classList.add('js');</script>
+<!-- The only JS-only controls on the page. Hidden when JS is off so no dead buttons ship; the
+     bottom bar then falls back to two columns (About · LinkedIn) instead of leaving a hole.
+     Everything else (all seven sections, every <details>, every anchor) works without JS. -->
+<style>html:not(.js) [data-lightbox],html:not(.js) [data-expand-all],html:not(.js) [data-collapse-all],html:not(.js) [data-copy],html:not(.js) [data-open-contents]{display:none}
+html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="layout">
+
+  <nav class="sidebar" aria-label="Sections">
+    <p class="sidebar__brand">Physics-Guided Generative Design for CDK2 Selectivity</p>
+    <a class="btn btn--primary" href="https://www.linkedin.com/in/vanja-markovi%C4%87-507b88348/">LinkedIn</a>
+    <ul class="sidebar__list">
+      <li><a class="sidebar__link" href="#overview">Overview</a></li>
+      <li><a class="sidebar__link" href="#signal">Building the selectivity signal</a></li>
+      <li><a class="sidebar__link" href="#selection">How selection works</a></li>
+      <li><a class="sidebar__link" href="#experiment">The experiment</a></li>
+      <li><a class="sidebar__link" href="#results">Results</a></li>
+      <li><a class="sidebar__link" href="#limits">Limits and next steps</a></li>
+      <li><a class="sidebar__link" href="#about">About and resources</a></li>
+    </ul>
+  </nav>
+
+  <main class="main" id="main" tabindex="-1">
+
+<!-- ================= 01-overview ================= -->
+<section class="section hero" id="overview" aria-labelledby="overview-h">
+  <div class="col">
+
+    <!-- No eyebrow here. On a 390x844 phone the first screen has room for exactly the
+         title, the poster's hook and the three numbers; the ~54px an eyebrow costs is
+         what pushes the third stat card below the fold. -->
+    <h1 id="overview-h">Physics-Guided Generative Design for CDK2 Selectivity</h1>
+
+    <!-- The poster's own line, repeated verbatim: a visitor who scanned the QR code read
+         this thirty seconds ago, and it gives the non-poster reader the problem before
+         the numbers answer it. -->
+    <p class="hero__hook"><b>Potency ≠ Selectivity.</b> Related kinases share the same ATP
+      pocket, so a molecule tuned only for CDK2 will often hit them too.</p>
+
+    <!-- The three numbers come before the prose. The full claim is the lede below; a
+         reader standing at the poster should not have to scroll to reach a result. -->
+    <div class="stats">
+
+      <div class="stat stat--guided">
+        <span class="stat__num">8 / 8</span>
+        <span class="stat__label">receptors improve</span>
+        <span class="stat__sub">all 8 reported intervals exclude zero</span>
+      </div>
+
+      <div class="stat stat--ink">
+        <span class="stat__num">13.95 %</span>
+        <span class="stat__label">of selections changed</span>
+        <span class="stat__sub">279 of 2,000, from one shared 26,062-molecule pool</span>
+      </div>
+
+      <div class="stat stat--ablated">
+        <span class="stat__num">−0.058z</span>
+        <span class="stat__label">median CDK2 cost</span>
+        <span class="stat__sub">slightly weaker predicted target binding</span>
+      </div>
+
+    </div>
+
+    <p class="note">Same candidate pool. Same selection budget. Only the antitarget term changes.</p>
+
+    <a class="jump" href="#results">See the controlled experiment ↓</a>
+
+    <p class="lede">Adding explicit off-target docking information to a generative molecular
+      workflow changes which molecules it keeps: all eight evaluated antitarget kinases shift
+      toward weaker predicted binding, for a small cost in predicted CDK2 potency.</p>
+
+    <!-- No contact buttons here. The bottom bar carries LinkedIn on every screen and the
+         author card in the last section carries both, so the first screen stays evidence only. -->
+
+    <p class="hero__scope">Docking-based, predicted selectivity. Selection-level proof of concept.</p>
+
+    <p class="byline"><strong>Vanja Marković</strong><sup>1,2</sup> · Júlia Vilalta-Mor<sup>1</sup>
+      · Violeta Basten<sup>1</sup> · Víctor Guallar<sup>1</sup></p>
+
+    <p class="affiliations"><sup>1</sup> Barcelona Supercomputing Center ·
+      <sup>2</sup> Universitat de Barcelona</p>
+
+  </div>
+</section>
+
+<!-- ================= 02-signal ================= -->
+<section class="section" id="signal" aria-labelledby="signal-h">
+  <div class="col">
+
+    <p class="section-eyebrow">Method: the measurement</p>
+    <h2 class="section-title" id="signal-h">
+      <span class="section-title__mark" aria-hidden="true">🧪</span>
+      Building the selectivity signal
+    </h2>
+
+    <p class="lede">Most of the work here was not the generative experiment. It was making off-target
+      liability measurable at all.</p>
+
+    <p class="note"><b>Docking</b>, throughout, means placing a molecule in a protein's binding
+      pocket <i>in silico</i> and scoring how well it fits. A Glide score is that estimate; more
+      negative means stronger predicted binding. Nothing on this page is a measured affinity.</p>
+
+    <div class="disclosure-controls">
+      <button class="btn btn--quiet" type="button" data-expand-all>Expand all</button>
+      <button class="btn btn--quiet" type="button" data-collapse-all>Collapse all</button>
+    </div>
+
+
+    <!-- ===== 2.1 ============================================================ -->
+
+    <h3 class="subsection" id="why-hard">Why CDK2 selectivity is hard</h3>
+
+    <p>Protein kinases share a conserved catalytic fold and a highly similar ATP-binding cleft. A
+      compound optimised only for CDK2 affinity will often also hit its close relatives, and
+      off-target activity at those kinases interferes with their own cellular roles.</p>
+
+    <p>So the design objective is not "bind CDK2 hard". It is <b>bind CDK2 hard while binding a
+      defined set of related kinases weakly</b>. That set is the <i>antitarget panel</i>.</p>
+
+    <figure class="figure reveal">
+      <div class="figure__plate">
+        <svg viewBox="0 0 300 150" role="img"
+             aria-label="One compound, two outcomes. A solid blue arrow leads to CDK2, where strong
+                         predicted binding is what the design wants; a dashed terracotta arrow leads
+                         to the related kinases, where binding is what the design has to avoid. Both
+                         pockets are close relatives, which is why the second arrow is hard to
+                         remove.">
+          <g fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-linejoin="round">
+            <path d="M12 66 l11-6.4 11 6.4 v12.8 l-11 6.4 -11-6.4 z"/>
+            <path d="M34 66 l12-7"/>
+            <path d="M46 59 v-9"/>
+            <circle cx="46" cy="46" r="4"/>
+          </g>
+          <text x="8" y="106" font-size="10" fill="var(--muted)">one compound</text>
+
+          <path d="M58 66 C 92 60, 112 50, 141 43" fill="none" stroke="var(--target)"
+                stroke-width="2"/>
+          <path d="M139 38 l12 5 -12 5 z" fill="var(--target)"/>
+
+          <path d="M58 80 C 92 88, 112 100, 141 110" fill="none" stroke="var(--ablated)"
+                stroke-width="2" stroke-dasharray="5 4"/>
+          <path d="M139 105 l12 5 -12 5 z" fill="var(--ablated)"/>
+
+          <rect x="155" y="20" width="140" height="46" rx="6"
+                fill="var(--target-bg)" stroke="var(--target)" stroke-width="1.5"/>
+          <text x="167" y="41" font-size="12.5" font-weight="700" fill="var(--ink)">
+            <tspan fill="var(--target)">✓</tspan> CDK2</text>
+          <text x="165" y="57" font-size="9.3" fill="var(--body)">bind strongly: the goal</text>
+
+          <rect x="155" y="88" width="140" height="46" rx="6"
+                fill="var(--ablated-bg)" stroke="var(--ablated)" stroke-width="1.5"
+                stroke-dasharray="5 4"/>
+          <text x="167" y="109" font-size="12.5" font-weight="700" fill="var(--ink)">
+            <tspan fill="var(--ablated-dk)">✗</tspan> related kinases</text>
+          <text x="165" y="125" font-size="9.3" fill="var(--body)">bind weakly: the constraint</text>
+        </svg>
+      </div>
+      <figcaption><b>The design problem.</b> Selectivity is a constraint on where a
+        molecule must <i>not</i> bind, which is why an affinity-only objective cannot express
+        it.</figcaption>
+    </figure>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">Technical details<span class="visually-hidden">: why CDK2 selectivity is hard</span></summary>
+      <div class="disclosure__body">
+        <ul>
+          <li>Type-I inhibitors, the class relevant here, compete with ATP at the site whose
+            geometry is the most conserved across the whole family.</li>
+          <li>The measured selectivity margin is Δp = p<sub>CDK2</sub> − max<sub>j</sub>
+            p<sub>AT,j</sub>, with p = −log₁₀X. It is <b>panel-dependent</b>: it measures activity
+            relative to the strongest <i>measured</i> antitarget, not an absolute property of the
+            molecule.</li>
+          <li>Docking discriminates actives from inactives, but is much weaker at resolving small
+            potency differences among ligands that are already active, and its score distributions
+            depend on the receptor and on the grid. Both facts drive design decisions below: the
+            first in <a href="#reliable-useful">reliable ≠ useful</a>, the second in
+            <a href="#one-scale">one common scale</a>.</li>
+        </ul>
+      </div>
+    </details>
+
+
+    <!-- 2.2 to 2.4 are the build-out: how the panel, the reference chemistry and the
+         docking grids were assembled. Real work, but three sections of it between the
+         reader and the idea in 2.5, so it opens on request. -->
+    <details class="disclosure disclosure--wide">
+      <summary class="disclosure__summary">How the panel, the reference chemistry and the docking
+        grids were built<span class="visually-hidden">: three subsections</span></summary>
+      <div class="disclosure__body">
+
+        <!-- ===== 2.2 ============================================================ -->
+
+        <h3 class="subsection" id="antitargets">Choosing the ten antitargets</h3>
+
+        <p class="lede">Compounds reported potent against CDK2 (≤ 1 µM) were pulled from ChEMBL together
+          with every available measurement against other human kinases. That gave <b>1,535</b> CDK2-active
+          compounds with usable profiles.</p>
+
+        <p>Candidate kinases were ranked by <b>how many of those compounds had been measured against
+          them</b>, and the top ten became the panel:</p>
+
+        <p><b>CDK1 · GSK3B · CDK9 · CDK5 · CDK7 · CDK6 · VEGFR2 · DYRK1A · Aurora B · PIM1</b></p>
+
+        <div class="callout callout--caution">
+          <strong class="callout__title">Read that ranking for what it is</strong>
+          <p>It mostly reflects <b>assay coverage</b>, which kinases people happened to test. It is a
+            statement about the literature, not directly about biology. Sequence relationships were used
+            afterwards as context, never as the criterion. The panel was fixed at this point, before any
+            receptor selection or docking calibration.</p>
+        </div>
+
+        <figure class="figure">
+          <p class="figure__lead">Recurrent cross-activity against how far each kinase sits from CDK2 in
+            sequence, measured over the whole kinase domain, and over the ATP pocket alone.</p>
+          <div class="figure__plate">
+            <img src="figures/fig_antitarget_landscape.svg" width="1000" height="419"
+                 decoding="async"
+                 alt="Two scatter panels over the ten candidate antitarget kinases: the number of CDK2
+                      inhibitors also active at each kinase (pIC₅₀ ≥ 6) falls as CDK2 kinase-domain
+                      sequence distance increases (Spearman ρ = −0.78, P = 0.008, n = 10), whereas the
+                      same relationship measured over the ATP-pocket positions alone is weaker and not
+                      significant at that level (ρ = −0.61, P = 0.062, n = 10). Recurrent cross-activity
+                      tracks whole-domain relatedness better than ATP-site identity does, with CDK1 the
+                      extreme outlier at over 500 shared actives.">
+          </div>
+          <p class="figure__hint">Small on a phone. Tap to enlarge.</p>
+          <button class="btn btn--quiet" type="button" data-lightbox="lb-antitarget">
+            Enlarge this figure</button>
+          <figcaption><b>Cross-activity against CDK2 sequence distance</b> for the ten
+            candidates, with Theil–Sen fits. (a) whole kinase domain; (b) the 85 KLIFS ATP-pocket
+            positions.</figcaption>
+        </figure>
+
+        <dialog class="lightbox" id="lb-antitarget"
+                aria-label="Cross-activity against CDK2 sequence distance, both panels">
+          <div class="lightbox__bar">
+            <span class="lightbox__title">Cross-activity vs sequence distance</span>
+            <button class="lightbox__close" type="button" aria-label="Close">✕</button>
+          </div>
+          <div class="lightbox__stage">
+            <img data-src="figures/fig_antitarget_landscape.svg" width="1000" height="419"
+                 alt="Enlarged view of the two scatter panels: cross-activity falls with kinase-domain
+                      distance from CDK2 (ρ = −0.78, P = 0.008) but tracks ATP-pocket identity more
+                      weakly (ρ = −0.61, P = 0.062).">
+          </div>
+        </dialog>
+
+        <details class="disclosure">
+          <summary class="disclosure__summary">See the numbers<span class="visually-hidden">: choosing the ten antitargets</span></summary>
+          <div class="disclosure__body">
+
+            <ul>
+              <li>Among the ten, the count of compounds also active at pIC₅₀ ≥ 6 falls with kinase-domain
+                distance from CDK2 (Spearman <b>ρ = −0.78, P = 0.008</b>). Over just the 85 KLIFS
+                ATP-pocket positions the relationship is weaker and not significant at the same level
+                (<b>ρ = −0.61, P = 0.062</b>).</li>
+              <li><b>Reading it carefully:</b> whole-domain relatedness tracks recurrent cross-activity
+                better than ATP-pocket identity does, so the selectivity landscape is not captured by
+                static ATP-site sequence alone. With n = 10 neither coefficient is a strong claim on its
+                own. The signal is the <i>direction and the contrast</i>, not either P-value.</li>
+              <li>Threshold stability of the coverage ordering: ρ = −0.721 (P = 0.0186) unthresholded;
+                −0.782 (P = 0.00755) at p ≥ 6; −0.748 (P = 0.0129) at p ≥ 7.</li>
+              <li>Worth noting for discussion: the three receptors that ended up <i>scoring</i> the
+                reward are among the more sequence-distant of the panel. Closely related kinases are the
+                harder docking problem.</li>
+            </ul>
+
+            <div class="table-scroll" tabindex="0" role="group"
+                 aria-label="Antitarget panel ranking">
+              <table class="table">
+                <caption>Panel ranking. <i>Profiled</i> is the number of CDK2-active
+                  compounds with a measurement at that kinase; it is the criterion. Identity columns are
+                  context, not criteria.</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Kinase</th><th scope="col">UniProt</th>
+                    <th scope="col" class="num">Profiled</th><th scope="col" class="num">Hit ≥ 6</th>
+                    <th scope="col" class="num">Hit ≥ 7</th><th scope="col" class="num">Hit rate %</th>
+                    <th scope="col" class="num">Median pIC₅₀</th>
+                    <th scope="col" class="num">Domain id. %</th>
+                    <th scope="col" class="num">Pocket id. %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">CDK1</th><td class="mono">P06493</td><td class="num">636</td><td class="num">544</td><td class="num">289</td><td class="num">86</td><td class="num">6.89</td><td class="num">65.5</td><td class="num">86.9</td></tr>
+                  <tr><th scope="row">GSK3B</th><td class="mono">P49841</td><td class="num">368</td><td class="num">309</td><td class="num">196</td><td class="num">84</td><td class="num">7.20</td><td class="num">33.1</td><td class="num">42.9</td></tr>
+                  <tr><th scope="row">CDK9</th><td class="mono">P50750</td><td class="num">349</td><td class="num">323</td><td class="num">237</td><td class="num">93</td><td class="num">7.68</td><td class="num">39.7</td><td class="num">54.8</td></tr>
+                  <tr><th scope="row">CDK5</th><td class="mono">Q00535</td><td class="num">319</td><td class="num">253</td><td class="num">121</td><td class="num">79</td><td class="num">6.80</td><td class="num">59.8</td><td class="num">76.2</td></tr>
+                  <tr><th scope="row">CDK7</th><td class="mono">P50613</td><td class="num">252</td><td class="num">203</td><td class="num">91</td><td class="num">81</td><td class="num">6.70</td><td class="num">44.6</td><td class="num">60.7</td></tr>
+                  <tr><th scope="row">CDK6</th><td class="mono">Q00534</td><td class="num">221</td><td class="num">208</td><td class="num">193</td><td class="num">94</td><td class="num">8.30</td><td class="num">49.0</td><td class="num">63.1</td></tr>
+                  <tr><th scope="row">VEGFR2</th><td class="mono">P35968</td><td class="num">215</td><td class="num">146</td><td class="num">63</td><td class="num">68</td><td class="num">6.66</td><td class="num">23.2</td><td class="num">33.8</td></tr>
+                  <tr><th scope="row">DYRK1A</th><td class="mono">Q13627</td><td class="num">198</td><td class="num">163</td><td class="num">94</td><td class="num">82</td><td class="num">6.91</td><td class="num">31.2</td><td class="num">40.5</td></tr>
+                  <tr><th scope="row">Aurora B</th><td class="mono">Q96GD4</td><td class="num">193</td><td class="num">134</td><td class="num">63</td><td class="num">69</td><td class="num">6.60</td><td class="num">28.5</td><td class="num">45.1</td></tr>
+                  <tr><th scope="row">PIM1</th><td class="mono">P11309</td><td class="num">190</td><td class="num">114</td><td class="num">23</td><td class="num">60</td><td class="num">6.20</td><td class="num">27.9</td><td class="num">42.9</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="table-scroll__hint">Scroll the table sideways for the identity columns.</p>
+
+            <figure class="figure">
+              <p class="figure__lead">Where the panel sits in the family: most of it clusters with CDK2
+                in the CMGC group, and three members reach outside it.</p>
+              <div class="figure__plate">
+                <img src="figures/fig_kinase_tree.svg" loading="lazy" width="1048" height="747"
+                     decoding="async"
+                     alt="Neighbour-joining tree of the kinase domains: CDK2 sits inside a tight cluster
+                          with CDK1, CDK5, CDK6, CDK7 and CDK9, GSK3B and DYRK1A branch nearby inside the
+                          CMGC group, and Aurora B, PIM1 and VEGFR2 fall outside it, VEGFR2 the most
+                          distant at the deepest split, as the tyrosine-kinase outgroup, so the panel is
+                          not a set of near neighbours but spans the family.">
+              </div>
+              <figcaption><b>Where the panel sits in the family.</b> Neighbour-joining tree of the eleven panel kinase domains,
+                scaled in substitutions per site.</figcaption>
+            </figure>
+
+          </div>
+        </details>
+
+
+        <!-- ===== 2.3 ============================================================ -->
+
+        <h3 class="subsection" id="reference-chemistry">The reference chemistry</h3>
+
+        <p class="lede">Everything that follows (grid validation, weighting, score normalisation) needs
+          measured chemistry to calibrate against.</p>
+
+        <p>That came from ChEMBL 37, for CDK2 and the ten antitargets: quantitative IC₅₀, K<sub>i</sub>
+          and K<sub>d</sub> values, retrieved <b>without a potency cutoff</b> and sorted into five
+          reference sets.</p>
+
+        <div class="table-scroll" tabindex="0" role="group"
+             aria-label="The five reference sets">
+        <table class="table">
+          <caption>The five reference sets. Δp is the measured selectivity margin defined under
+            <a href="#why-hard">why CDK2 selectivity is hard</a>.</caption>
+          <thead>
+            <tr><th scope="col">Set</th><th scope="col">Definition</th><th scope="col" class="num">n</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">S1</th><td>CDK2-active <b>and selective</b> (Δp ≥ 1)</td><td class="num">111</td></tr>
+            <tr><th scope="row">S2</th><td>CDK2-active <b>and promiscuous</b> (Δp &lt; 1)</td><td class="num">493</td></tr>
+            <tr><th scope="row">S3</th><td>CDK2-active, insufficient antitarget evidence</td><td class="num">315</td></tr>
+            <tr><th scope="row">S4</th><td>measured CDK2 <b>inactive</b></td><td class="num">924</td></tr>
+            <tr><th scope="row">S5</th><td>property-matched <b>presumed non-binders</b></td><td class="num">2,000</td></tr>
+            <tr><th scope="row">Total</th><td></td><td class="num"><b>3,843</b></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <div class="callout callout--caution">
+          <strong class="callout__title">S1 is finite-panel selectivity, not kinome-wide selectivity</strong>
+          <p>102 of the 111 S1 compounds are classified on a single decisively measured antitarget. This
+            bounds every downstream claim on this page.</p>
+        </div>
+
+        <details class="disclosure">
+          <summary class="disclosure__summary">Protocol and validation<span class="visually-hidden">: the reference chemistry</span></summary>
+          <div class="disclosure__body">
+            <ul>
+              <li><b>Standardisation:</b> RDKit: largest organic fragment retained, formal charges
+                neutralised, canonicalised. Identity is the connectivity block of the InChIKey.</li>
+              <li><b>Replicates:</b> median within activity type. IC₅₀, K<sub>i</sub> and K<sub>d</sub>
+                are <b>not numerically pooled</b>; precedence IC₅₀ &gt; K<sub>i</sub> &gt;
+                K<sub>d</sub>. Contradictory evidence is flagged <b>ambiguous</b>, not averaged.</li>
+              <li>After curation: <b>30,744 compounds, 44,604 compound–kinase pairs</b>.</li>
+              <li><b>Applicability domain:</b> MW <span class="mono">280.851–609.193</span> Da,
+                deliberately narrower than the 280.85–700 Da filter used during generation.</li>
+              <li><b>Classes:</b> active at p ≥ 7, inactive at p &lt; 5, or when a censored measurement
+                places activity beyond the weak-binding threshold. Intermediate measurements are treated
+                as weak, not decisive.</li>
+              <li><b>How S5 was built:</b> exclude any candidate with a recorded measurement against
+                <i>any</i> of the eleven panel kinases, then match to CDK2-active chemistry within
+                MW ± 25 Da, cLogP ± 1.0, HBA ± 2, HBD ± 1, rotatable bonds ± 2, identical formal charge.
+                Each decoy used once. <b>43,546 candidates → 9,259 matches → deterministic cap at
+                2,000.</b></li>
+              <li>Complete receptor-panel profiles exist for S1, S2 and S5; S3 and S4 give CDK2-specific
+                calibration only.</li>
+              <li>Scaffold grouping throughout uses Bemis–Murcko scaffolds (RDKit).</li>
+            </ul>
+          </div>
+        </details>
+
+
+        <!-- ===== 2.4 ============================================================ -->
+
+        <h3 class="subsection" id="structures-grids">From crystal structures to docking grids</h3>
+
+        <p class="lede">Every panel kinase was rebuilt from experimental structures, aligned into one
+          frame, and reduced to the smallest set of conformations the data actually supports, with one
+          exception, Aurora B, which is benchmark-only and carries a single structure
+          (<span class="mono">4AF3_A</span>) forward directly.</p>
+
+        <p><b>1,005 PDB structures → 12 production docking grids over 9 kinases.</b></p>
+
+        <figure class="figure reveal">
+          <div class="figure__plate">
+            <svg viewBox="0 0 300 192" role="img"
+                 aria-label="Funnel: 1,005 PDB structures are prepared and screened for a complete
+                             binding pocket, aligned into one common frame, reduced conformationally, and
+                             end as 12 production docking grids over 9 kinases.">
+              <g class="stage-fill" style="--i:0">
+                <rect x="14" y="4" width="272" height="28" rx="4"
+                      fill="var(--panel)" stroke="var(--rule)"/>
+                <text x="150" y="23" text-anchor="middle" font-size="11" fill="var(--ink)">1,005 PDB structures</text>
+              </g>
+              <path d="M144 34 h12 l-6 7 z" fill="var(--faint)"/>
+              <g class="stage-fill" style="--i:1">
+                <rect x="32" y="42" width="236" height="28" rx="4"
+                      fill="var(--panel)" stroke="var(--rule)"/>
+                <text x="150" y="61" text-anchor="middle" font-size="11" fill="var(--ink)">prepared · pocket-complete</text>
+              </g>
+              <path d="M144 72 h12 l-6 7 z" fill="var(--faint)"/>
+              <g class="stage-fill" style="--i:2">
+                <rect x="50" y="80" width="200" height="28" rx="4"
+                      fill="var(--panel)" stroke="var(--rule)"/>
+                <text x="150" y="99" text-anchor="middle" font-size="11" fill="var(--ink)">aligned to one frame</text>
+              </g>
+              <path d="M144 110 h12 l-6 7 z" fill="var(--faint)"/>
+              <g class="stage-fill" style="--i:3">
+                <rect x="68" y="118" width="164" height="28" rx="4"
+                      fill="var(--panel)" stroke="var(--rule)"/>
+                <text x="150" y="137" text-anchor="middle" font-size="11" fill="var(--ink)">conformational reduction</text>
+              </g>
+              <path d="M144 148 h12 l-6 7 z" fill="var(--faint)"/>
+              <g class="stage-fill" style="--i:4">
+                <rect x="80" y="156" width="140" height="30" rx="4"
+                      fill="var(--guided-bg)" stroke="var(--guided)" stroke-width="1.5"/>
+                <text x="150" y="176" text-anchor="middle" font-size="11.5" font-weight="700"
+                      fill="var(--guided-dk)">12 grids · 9 kinases</text>
+              </g>
+            </svg>
+          </div>
+          <figcaption><b>The receptor funnel.</b> Each stage removes structures that cannot
+            be trusted to dock against; the last stage is what the objective actually
+            uses.</figcaption>
+        </figure>
+
+        <div class="callout">
+          <strong class="callout__title">Grids outnumber kinases</strong>
+          <p>CDK2, CDK1 and CDK7 each contribute two, because their pocket geometry supported a validated
+            conformational split. "Ten antitarget grids" and "eight antitarget kinases" are both
+            correct.</p>
+        </div>
+
+        <details class="disclosure">
+          <summary class="disclosure__summary">Protocol and validation<span class="visually-hidden">: from crystal structures to docking grids</span></summary>
+          <div class="disclosure__body">
+
+            <h4>Collection</h4>
+            <p>Structures were identified in the PDB by UniProt accession and screened on method,
+              resolution ≤ 3.2 Å, chain length and title exclusions → <b>1,005 unique entries /
+              1,406 kinase-chain records</b>. Chains were extracted from mmCIF with Gemmi;
+              crystallographic <b>altloc</b> records were kept as separate conformers rather than
+              collapsed.</p>
+
+            <h4>Preparation</h4>
+            <p>Schrödinger Protein Preparation Wizard (2025-2): hydrogens, protonation at pH ≈ 7.4, Prime
+              rebuild of missing side chains and loops, restrained S-OPLS minimisation.</p>
+
+            <h4>Pocket completeness</h4>
+            <p>P-loop, catalytic β3 lysine, HRD, DFG and hinge were located in each kinase's UniProt
+              reference sequence and mapped through mmCIF numbering; structures missing any expected
+              pocket residue were excluded. KLIFS annotations were used to retain DFG-in and to exclude
+              annotated allosteric ligands; structures with no KLIFS record were left unassessed rather
+              than assumed clean.</p>
+
+            <h4>Alignment</h4>
+            <p>Common frame: CDK2 <span class="mono">6Q4G_A_altA</span> (KLIFS 11214). Of <b>1,729</b>
+              structures entering, <b>1,420</b> use direct KLIFS correspondence and <b>309</b>
+              within-kinase transfer. Least-squares Kabsch fit of Cα over <b>11 conserved anchors</b>:
+              β3 Lys (17), gatekeeper (45), hinge (46–48), HRD (68–70), DFG (81–83), requiring ≥ 8
+              anchors including ≥ 2 per lobe; seven structures fail, leaving <b>1,722 aligned</b>.
+              Maximum internal-distance change after alignment is <b>&lt; 0.002 Å</b>.</p>
+
+            <h4>Frame sensitivity</h4>
+            <p>Six alternative CDK2 references (<span class="mono">1FIN_A</span>,
+              <span class="mono">3QHW_A</span>, <span class="mono">4I3Z_A</span>,
+              <span class="mono">7ACK_A_altA</span>, <span class="mono">4GCJ_A_altA</span>,
+              <span class="mono">8FP5_A_altA</span>) were chosen to span αC state, nucleotide occupancy,
+              ligand size and activation state rather than resolution. Repeating the whole stratification
+              in all seven frames recovers the same discrete-state conclusions for CDK1, CDK2 and
+              CDK7, although the exact number of CDK2 strata varies between frames (2 to 4).</p>
+
+            <figure class="figure">
+              <p class="figure__lead">How many conformational states each kinase resolves into, repeated
+                in seven different CDK2 alignment frames.</p>
+              <div class="figure__scroll" tabindex="0" role="group"
+                   aria-label="Reference-frame sensitivity heat map, scrollable">
+                <img src="figures/fig_reference_sensitivity.svg" loading="lazy" width="900" height="488"
+                     decoding="async"
+                     alt="Heat map of how many conformational states the stratification selects for each
+                          kinase when the pocket is aligned onto each of seven different CDK2 reference
+                          structures spanning αC-in and αC-out: CDK1, CDK2 and CDK7 resolve into at least
+                          two states in every frame, the three tested-but-rejected kinases fluctuate
+                          between one and four, and the four kinases with too few structures to test stay
+                          at one throughout. The discrete-state conclusion does not depend on which CDK2
+                          structure is used as the frame.">
+              </div>
+              <p class="figure__hint">Scroll sideways for the remaining reference frames.</p>
+              <figcaption><b>States selected per kinase</b>, across seven alternative CDK2
+                reference frames. Counts are printed in every cell.</figcaption>
+            </figure>
+
+            <h4>Conformational stratification</h4>
+            <p>Each structure was reduced to <b>x = (R<sub>core</sub>, R<sub>pocket</sub>,
+              D<sub>max</sub>)</b>, robustly scaled within kinase by median and IQR. Kinases with fewer
+              than 20 usable structures are not tested. Ward clustering, k = 2 … min(4, ⌊n/5⌋),
+              n<sub>min</sub> = max(5, 0.02n), with k chosen by maximum silhouette.</p>
+            <p><b>Two gates, both required:</b> the silhouette must exceed the maximum obtained from 20
+              <i>structureless</i> Gaussian surrogates with matched mean and covariance; and the mean
+              adjusted Rand index over 25 independent 80 % subsamples must exceed 0.6. A permutation null
+              shifts the thresholds but does not change one decision.</p>
+
+            <div class="table-scroll" tabindex="0" role="group"
+                 aria-label="Conformational stratification">
+              <table class="table">
+                <caption>Conformational stratification. S<sub>obs</sub> is the observed
+                  silhouette; S<sub>Gauss</sub> and S<sub>perm</sub> are the two null maxima; ARI is
+                  subsample stability. CDK5, CDK6, CDK9 and VEGFR2 had too few structures to test and are
+                  treated as single-state.</caption>
+                <thead>
+                  <tr><th scope="col">Kinase</th><th scope="col" class="num">S<sub>obs</sub></th>
+                      <th scope="col" class="num">S<sub>Gauss</sub></th>
+                      <th scope="col" class="num">S<sub>perm</sub></th>
+                      <th scope="col" class="num">ARI</th><th scope="col">Decision</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">CDK1</th><td class="num">0.917</td><td class="num">0.668</td><td class="num">0.376</td><td class="num">1.00</td><td>accept</td></tr>
+                  <tr><th scope="row">CDK2</th><td class="num">0.781</td><td class="num">0.490</td><td class="num">0.358</td><td class="num">0.99</td><td>accept</td></tr>
+                  <tr><th scope="row">CDK7</th><td class="num">0.784</td><td class="num">0.591</td><td class="num">0.673</td><td class="num">0.99</td><td>accept</td></tr>
+                  <tr><th scope="row">DYRK1A</th><td class="num">0.260</td><td class="num">0.230</td><td class="num">0.249</td><td class="num">0.54</td><td>reject</td></tr>
+                  <tr><th scope="row">GSK3B</th><td class="num">0.493</td><td class="num">0.336</td><td class="num">0.485</td><td class="num">0.47</td><td>reject</td></tr>
+                  <tr><th scope="row">PIM1</th><td class="num">0.258</td><td class="num">0.327</td><td class="num">0.237</td><td class="num">0.38</td><td>reject</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <figure class="figure">
+              <p class="figure__lead">The three kinases whose split was accepted, with the structures
+                promoted to production grids circled.</p>
+              <div class="figure__scroll" tabindex="0" role="group"
+                   aria-label="Conformational stratification scatter, scrollable">
+                <img src="figures/fig_ensemble_reduction.svg" loading="lazy" width="960" height="404"
+                     decoding="async"
+                     alt="Three panels, CDK1 (n = 27), CDK2 (n = 860) and CDK7 (n = 40), plotting every
+                          retained structure by pocket RMSD to the reference against worst-position
+                          deviation, coloured by the conformational state Ward clustering assigned: each
+                          kinase separates into visibly distinct clouds, CDK2 into three states of 318,
+                          403 and 139 structures, and the two circled points per kinase are the
+                          representatives promoted to production docking grids, CDK2's third state
+                          contributing none.">
+              </div>
+              <p class="figure__hint">Scroll sideways for the CDK7 panel.</p>
+              <figcaption><b>Conformational reduction</b> for the three accepted kinases.
+                <b>Note:</b> the state labels S1, S2, S3 in this figure are <i>conformational states</i>,
+                not the S1–S5 reference chemistry sets above.</figcaption>
+            </figure>
+
+            <h4>Representative selection</h4>
+            <p>Eligibility: ≥ 10/11 anchors, ≥ 78 mapped pocket positions, D<sub>max</sub> &lt; 12 Å.
+              Quality <b>Q = 0.4·f<sub>pocket</sub> + 0.2·f<sub>anchor</sub> +
+              0.2·(1 − D<sub>max</sub>/12 Å) + 0.1·I<sub>cavity</sub> + 0.1·D<sub>score</sub></b>; the
+              coefficients are <i>fixed design weights, not fitted to docking or activity data</i>. The
+              highest-Q structure within an accepted state is taken; for unsplit kinases, ranks by
+              centroid distance and by Q are summed equally. CDK2 resolves into three strata, and the two
+              with the largest separation in median D<sub>max</sub> are kept.</p>
+
+            <h4>The two panels</h4>
+            <p>Benchmark <b>14 grids / 11 kinases</b> (reference-chemistry docking and validation);
+              production <b>12 grids / 9 kinases</b>.</p>
+
+            <div class="table-scroll" tabindex="0" role="group"
+                 aria-label="Production and benchmark docking grids">
+              <table class="table">
+                <caption>Deployed grids.</caption>
+                <thead>
+                  <tr><th scope="col">Kinase</th><th scope="col">Grid(s)</th><th scope="col">Panel</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">CDK2</th><td class="mono">6Q4G_A_altA · 4EOS_C_altB</td><td>production</td></tr>
+                  <tr><th scope="row">CDK1</th><td class="mono">6GU4_A · 6GU7_A</td><td>production</td></tr>
+                  <tr><th scope="row">CDK7</th><td class="mono">8R9B_D · 8R9S_B</td><td>production</td></tr>
+                  <tr><th scope="row">CDK5</th><td class="mono">1UNL_A</td><td>production</td></tr>
+                  <tr><th scope="row">CDK6</th><td class="mono">5L2T_A</td><td>production</td></tr>
+                  <tr><th scope="row">CDK9</th><td class="mono">3MY1_A</td><td>production</td></tr>
+                  <tr><th scope="row">DYRK1A</th><td class="mono">5A4L_D</td><td>production</td></tr>
+                  <tr><th scope="row">GSK3B</th><td class="mono">3L1S_A</td><td>production</td></tr>
+                  <tr><th scope="row">PIM1</th><td class="mono">3CY3_A</td><td>production</td></tr>
+                  <tr><th scope="row">VEGFR2</th><td class="mono">3B8R_B</td><td>benchmark only</td></tr>
+                  <tr><th scope="row">Aurora B</th><td class="mono">4AF3_A</td><td>benchmark only</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </details>
+
+
+      </div>
+    </details>
+
+
+    <!-- ===== 2.5: the conceptual centrepiece ================================ -->
+
+    <h3 class="subsection" id="reliable-useful">Reliable ≠ useful: the two-question test</h3>
+
+    <p class="lede">A grid that separates known binders from known non-binders is <b>reliable</b>.
+      That is not the same as <b>useful</b>. A receptor earns a place in the objective only if its
+      score improves prediction of measured selectivity on chemical families held out from the
+      fit.</p>
+
+    <figure class="figure reveal">
+      <div class="figure__plate">
+        <svg viewBox="0 0 300 214" role="img"
+             aria-label="Two separate questions. First, is a receptor's grid reliable, can it tell
+                         measured binders from measured non-binders? Second, is it useful, does its
+                         score improve prediction of measured selectivity on chemistry never seen
+                         before? These are not the same question, and panel membership was decided on
+                         the second.">
+          <!-- Three q-step groups: question 1, then the divider that says they differ, then
+               question 2. Sequenced so the "not the same question" beat lands between them. -->
+          <g class="q-step" style="--i:0">
+            <rect x="4" y="4" width="292" height="76" rx="8"
+                  fill="var(--panel)" stroke="var(--rule)"/>
+            <text x="18" y="27" font-size="13" font-weight="700" fill="var(--ink)"
+                  letter-spacing="0.06em">1 · RELIABLE?</text>
+            <text x="18" y="50" font-size="11.5" fill="var(--body)">Can this receptor's grid tell measured</text>
+            <text x="18" y="67" font-size="11.5" fill="var(--body)">binders from measured non-binders?</text>
+          </g>
+
+          <g class="q-step" style="--i:1">
+            <path d="M4 106 h84" stroke="var(--rule)" stroke-width="1"/>
+            <path d="M212 106 h84" stroke="var(--rule)" stroke-width="1"/>
+            <text x="150" y="110" text-anchor="middle" font-size="11" font-style="italic"
+                  fill="var(--muted)">not the same question</text>
+          </g>
+
+          <g class="q-step" style="--i:2">
+            <rect x="4" y="126" width="292" height="84" rx="8"
+                  fill="var(--panel)" stroke="var(--rule)"/>
+            <text x="18" y="149" font-size="13" font-weight="700" fill="var(--ink)"
+                  letter-spacing="0.06em">2 · USEFUL?</text>
+            <text x="18" y="172" font-size="11.5" fill="var(--body)">Does its score improve prediction of</text>
+            <text x="18" y="189" font-size="11.5" fill="var(--body)">measured selectivity, on chemistry</text>
+            <text x="18" y="206" font-size="11.5" fill="var(--body)">the objective has never seen?</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption><b>The two-question test.</b> Question 1 validates a grid; question 2
+        decides whether a receptor belongs in the objective. Both were asked, separately.</figcaption>
+    </figure>
+
+    <div class="callout">
+      <strong class="callout__title">Per-kinase docking quality does not predict a receptor's
+        contribution to the objective</strong>
+      <p><b>CDK9</b> has the best grid in the panel (ROC AUC <b>0.890</b>). It is also the only
+        receptor whose inclusion measurably <i>improves</i> selectivity prediction. It was still
+        <b>held out</b>: adding it degraded worst-case robustness on unseen chemical families.</p>
+      <p><b>CDK6</b> has the third-best grid discrimination (<b>0.827</b>) and actively
+        <i>degrades</i> selectivity prediction.</p>
+      <p>The two questions were therefore tested separately, and panel membership rests on the
+        second.</p>
+    </div>
+
+    <p class="chip-line">
+      <span class="chip chip--scored"><span class="chip__mark" aria-hidden="true">✓</span>SCORED</span>
+      <span class="chip-line__members">DYRK1A · GSK3B · PIM1 (enter the reward)</span>
+    </p>
+    <p class="chip-line">
+      <span class="chip chip--held">HELD OUT</span>
+      <span class="chip-line__members">CDK1 · CDK5 · CDK6 · CDK7 · CDK9 (evaluated only, never
+        optimised against)</span>
+    </p>
+    <p class="chip-line">
+      <span class="chip chip--removed"><span class="chip__mark" aria-hidden="true">✗</span>REMOVED</span>
+      <span class="chip-line__members">Aurora B · VEGFR2 (no usable, or no useful, signal)</span>
+    </p>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">Protocol and validation<span class="visually-hidden">: the two-question test</span></summary>
+      <div class="disclosure__body">
+
+        <p><b>Question 1: is the grid reliable?</b></p>
+        <ul>
+          <li>The enrichment set was assembled <b>independently of S1–S5</b>: measured actives
+            (p ≥ 7) and inactives (p ≤ 5) <i>at that kinase</i>, capped at 400 per class, docked
+            against that kinase's own grid or grids. Scores were reduced across representatives
+            first, so the figures below are kinase-level.</li>
+          <li>Three metrics, because they answer different questions: <b>ROC AUC</b> (the whole
+            ranking), <b>EF1 %</b> (the top percentile only) and <b>BEDROC α = 20</b> (exponential
+            early weighting). Only AUC enters the weighting.</li>
+          <li><b>Reliability weight</b> w<sub>k</sub> = 0 if AUC &lt; 0.55, else 2(AUC − 0.5). A grid
+            at chance is excluded exactly, not softly.</li>
+          <li><b>CDK5</b> is the clearest discordant case: AUC 0.618 is above chance, but EF1 % = 0.60
+            is <i>below</i> the random expectation of 1.0 and its BEDROC is the lowest in the panel:
+            good global ranking, bad early enrichment.</li>
+          <li>The negative class here is <b>measured inactivity, not S5</b>. S5 has no measurements
+            against any panel kinase and is used only as the normalisation anchor, never as a
+            validated inactive class.</li>
+        </ul>
+
+        <div class="table-scroll" tabindex="0" role="group"
+             aria-label="Grid validation and final roles">
+          <table class="table">
+            <caption>Grid validation and roles. Ordered by ROC AUC. Note that the
+              ordering of this column does <i>not</i> reproduce the final roles.</caption>
+            <thead>
+              <tr><th scope="col">Kinase</th><th scope="col" class="num">n<sub>act</sub></th>
+                  <th scope="col" class="num">n<sub>inact</sub></th>
+                  <th scope="col" class="num">ROC AUC</th><th scope="col" class="num">EF1 %</th>
+                  <th scope="col" class="num">BEDROC</th><th scope="col" class="num">w<sub>k</sub></th>
+                  <th scope="col">Final role</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">CDK9</th><td class="num">400</td><td class="num">313</td><td class="num">0.890</td><td class="num">1.78</td><td class="num">0.974</td><td class="num">0.779</td><td><span class="role role--held">held out</span></td></tr>
+              <tr><th scope="row">PIM1</th><td class="num">400</td><td class="num">400</td><td class="num">0.843</td><td class="num">2.00</td><td class="num">0.961</td><td class="num">0.685</td><td><span class="role role--scored">scored</span></td></tr>
+              <tr><th scope="row">CDK6</th><td class="num">400</td><td class="num">229</td><td class="num">0.827</td><td class="num">1.57</td><td class="num">0.944</td><td class="num">0.654</td><td><span class="role role--held">held out</span></td></tr>
+              <tr><th scope="row">DYRK1A</th><td class="num">399</td><td class="num">399</td><td class="num">0.749</td><td class="num">1.75</td><td class="num">0.887</td><td class="num">0.498</td><td><span class="role role--scored">scored</span></td></tr>
+              <tr><th scope="row">CDK7</th><td class="num">141</td><td class="num">279</td><td class="num">0.742</td><td class="num">2.23</td><td class="num">0.729</td><td class="num">0.484</td><td><span class="role role--held">held out</span></td></tr>
+              <tr><th scope="row">CDK1</th><td class="num">400</td><td class="num">400</td><td class="num">0.721</td><td class="num">2.00</td><td class="num">0.892</td><td class="num">0.441</td><td><span class="role role--held">held out</span></td></tr>
+              <tr><th scope="row">GSK3B</th><td class="num">400</td><td class="num">400</td><td class="num">0.636</td><td class="num">2.00</td><td class="num">0.767</td><td class="num">0.271</td><td><span class="role role--scored">scored</span></td></tr>
+              <tr><th scope="row">CDK5</th><td class="num">153</td><td class="num">400</td><td class="num">0.618</td><td class="num">0.60</td><td class="num">0.439</td><td class="num">0.237</td><td><span class="role role--held">held out</span></td></tr>
+              <tr><th scope="row">Aurora B</th><td class="num">396</td><td class="num">400</td><td class="num">0.558</td><td class="num">1.76</td><td class="num">0.720</td><td class="num">0.117</td><td><span class="role role--removed">removed</span></td></tr>
+              <tr><th scope="row">VEGFR2</th><td class="num">400</td><td class="num">399</td><td class="num">0.514</td><td class="num">1.50</td><td class="num">0.509</td><td class="num">0.000</td><td><span class="role role--removed">removed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-scroll__hint">Scroll the table sideways for the remaining metrics.</p>
+
+      </div>
+    </details>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">Why this decision?<span class="visually-hidden">: the two-question test</span></summary>
+      <div class="disclosure__body">
+        <p><b>Question 2: is the receptor useful?</b></p>
+        <ul>
+          <li>The target was measured <b>S1 (selective) vs S2 (promiscuous)</b>, on compounds with a
+            complete receptor profile. <b>254 Bemis–Murcko scaffolds → 5 scaffold-disjoint folds ×
+            3 seeds = 15 held-out tests</b> per candidate subset, against a permutation null of
+            shuffled labels.</li>
+          <li>Subsets were compared on <b>worst fold, not mean</b>. An objective deployed inside a
+            generative loop meets chemistry it has not seen, so behaviour on the least favourable
+            held-out family is the relevant guarantee.</li>
+          <li><b>A = {DYRK1A, GSK3B, PIM1}</b> attains the highest worst-fold selectivity gain of any
+            subset examined (<b>+0.093</b>). Adding CDK9 improves the <i>mean</i> but degrades
+            worst-fold, and was rejected.</li>
+          <li>Reported rather than smoothed over: selecting on worst fold deliberately sacrifices mean
+            performance; and the deployed composite attains worst-fold enrichment <b>0.93</b>,
+            marginally <i>below random</i> on one of fifteen folds, with mean 1.49. That is the best
+            of every objective tested on both figures, but it is not a guarantee on unseen
+            chemistry.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">See the numbers<span class="visually-hidden">: the two-question test</span></summary>
+      <div class="disclosure__body">
+
+        <p>Which signals are real? A gradient-boosted classifier was fitted to the S1/S2 label under
+          the same scaffold-disjoint protocol: first unconstrained, then with <b>monotone
+          constraints</b> enforcing the physically required directions. <i>A feature block whose
+          apparent value disappears under that constraint was being used in a direction with no
+          physical reading.</i></p>
+
+        <div class="table-scroll" tabindex="0" role="group"
+             aria-label="Monotone-constraint analysis by feature block">
+          <table class="table">
+            <caption>Held-out AUC by feature block, unconstrained and monotone-constrained, against
+              the permutation null.</caption>
+            <thead>
+              <tr><th scope="col">Feature block</th><th scope="col" class="num">Unconstrained</th>
+                  <th scope="col" class="num">Constrained</th><th scope="col" class="num">Null</th>
+                  <th scope="col">Reading</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">CDK2 score only</th><td class="num">0.559</td><td class="num">0.391</td><td class="num">0.438</td><td><b>artefact</b></td></tr>
+              <tr><th scope="row">Physicochemical only</th><td class="num">0.674</td><td class="num">0.674</td><td class="num">0.495</td><td>real</td></tr>
+              <tr><th scope="row">Eight antitargets only</th><td class="num">0.693</td><td class="num">0.623</td><td class="num">0.478</td><td>real</td></tr>
+              <tr><th scope="row">CDK2 + physchem</th><td class="num">0.690</td><td class="num">0.673</td><td class="num">0.496</td><td>real</td></tr>
+              <tr><th scope="row">CDK2 + anti + physchem</th><td class="num">0.733</td><td class="num">0.725</td><td class="num">0.496</td><td>real</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout--caution">
+          <strong class="callout__title">The CDK2 docking score is an artefact feature</strong>
+          <p>Unconstrained it looks informative (0.559 against a null of 0.438); forced to act in the
+            physically correct direction it collapses to 0.391, below its own null, permutation
+            P = 0.885. Its entire apparent contribution came from the inverted relation <i>"weaker
+            CDK2 binding predicts selectivity"</i>, which is real in the data and useless as an
+            objective.</p>
+        </div>
+
+        <ul>
+          <li>The antitarget block behaves oppositely: constraining it costs 0.070, constraining the
+            full block costs 0.008: it was already being used in the physically correct direction.
+            The antitarget increment over CDK2 + physicochemistry, constrained, is <b>+0.052</b>
+            (0.673 → 0.725). Extending from eight antitargets to ten gives 0.721: VEGFR2 and Aurora B
+            add nothing.</li>
+          <li>Within the block: <b>CDK5 and CDK6 measurably degrade</b> discrimination (−0.011 and
+            −0.009 AUC, intervals excluding zero), reliable as measurements, carrying information
+            that runs <i>against</i> the label. <b>CDK1 and CDK7</b> have no detectable effect.
+            <b>CDK9 alone improves</b> it (+0.023, interval excluding zero), and was held out on
+            worst-fold robustness.</li>
+        </ul>
+
+      </div>
+    </details>
+
+
+    <!-- ===== 2.6 ============================================================ -->
+
+    <h3 class="subsection" id="one-scale">Putting every receptor on one scale</h3>
+
+    <p class="lede">A docking score of −8 at one receptor does not mean the same thing as −8 at
+      another. Score distributions depend on the receptor structure and the grid, so raw values
+      cannot be compared or combined across a panel.</p>
+
+    <div class="callout">
+      <strong class="callout__title">Each receptor gets its own ruler</strong>
+      <p>Its scores are expressed relative to its own baseline: the distribution obtained from
+        compounds with no recorded measurement against any panel kinase, the <b>S5</b> set from the
+        reference chemistry above. After calibration, a score at DYRK1A and a score at CDK2 mean the
+        same thing, and the panel can be combined.</p>
+    </div>
+
+    <figure class="figure reveal">
+      <div class="figure__plate">
+        <svg viewBox="0 0 300 272" role="img"
+             aria-label="Three stages. Raw Glide scores sit on a different scale at every receptor,
+                         so two receptors' distributions fall in different places. Each receptor is
+                         then calibrated against its own S5 non-binder baseline. The result is
+                         z-scores that share one origin, so a value at one receptor means the same
+                         as the same value at another.">
+          <g class="stage-fill" style="--i:0">
+            <rect x="4" y="4" width="292" height="86" rx="8" fill="var(--bg)" stroke="var(--rule)"/>
+            <text x="16" y="25" font-size="11.5" font-weight="700" fill="var(--ink)">raw Glide scores</text>
+            <text x="16" y="40" font-size="9.5" fill="var(--muted)">a different scale at every receptor</text>
+            <path d="M16 80 h268" stroke="var(--rule)"/>
+            <path d="M50 80 C 64 80, 66 52, 80 52 C 94 52, 96 80, 110 80" fill="none"
+                  stroke="var(--body)" stroke-width="1.5"/>
+            <path d="M188 80 C 199 80, 201 60, 210 60 C 219 60, 221 80, 232 80" fill="none"
+                  stroke="var(--body)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="80" y="48" text-anchor="middle" font-size="8.5" fill="var(--muted)">receptor A</text>
+            <text x="210" y="56" text-anchor="middle" font-size="8.5" fill="var(--muted)">receptor B</text>
+          </g>
+
+          <path d="M144 94 h12 l-6 8 z" fill="var(--faint)"/>
+
+          <g class="stage-fill" style="--i:1">
+            <rect x="4" y="106" width="292" height="52" rx="8"
+                  fill="var(--guided-bg)" stroke="var(--guided)" stroke-width="1.5"/>
+            <text x="16" y="127" font-size="11.5" font-weight="700" fill="var(--guided-dk)">calibrate on its own S5 baseline</text>
+            <text x="16" y="145" font-size="9.5" fill="var(--guided-dk)">median and MAD of the presumed non-binders</text>
+          </g>
+
+          <path d="M144 162 h12 l-6 8 z" fill="var(--faint)"/>
+
+          <g class="stage-fill" style="--i:2">
+            <rect x="4" y="174" width="292" height="94" rx="8" fill="var(--bg)"
+                  stroke="var(--ink)" stroke-width="1.5"/>
+            <text x="16" y="195" font-size="11.5" font-weight="700" fill="var(--ink)">comparable z-scores</text>
+            <text x="16" y="210" font-size="9.5" fill="var(--muted)">the same number means the same thing</text>
+            <path d="M16 248 h268" stroke="var(--rule)"/>
+            <path d="M150 242 v12" stroke="var(--ink)"/>
+            <!-- Each curve slides in from the x-offset it occupied on the raw scale above
+                 (A was centred at 80, B at 210; both land on the shared origin at 150), so the
+                 diagram performs the calibration instead of captioning it. -->
+            <path class="slide-x" style="--dx:-70px" d="M118 248 C 133 248, 135 218, 150 218 C 165 218, 167 248, 182 248" fill="none"
+                  stroke="var(--body)" stroke-width="1.5"/>
+            <path class="slide-x" style="--dx:60px" d="M130 248 C 141 248, 143 226, 150 226 C 157 226, 159 248, 170 248" fill="none"
+                  stroke="var(--body)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="150" y="263" text-anchor="middle" font-size="8.5" fill="var(--muted)">0</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption><b>Receptor-specific calibration.</b> The two curves are two receptors'
+        baseline score distributions, solid and dashed, before and after they are put on one
+        scale.</figcaption>
+    </figure>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">Technical details<span class="visually-hidden">: putting every receptor on one scale</span></summary>
+      <div class="disclosure__body">
+        <ul>
+          <li><b>z<sub>k</sub> = (m<sub>k</sub> − s<sub>k</sub>) / σ<sub>k</sub></b>, with
+            σ<sub>k</sub> = 1.4826 · MAD<sub>k</sub> and m<sub>k</sub> the median S5 score at
+            receptor k. Larger z means stronger predicted binding relative to that receptor's own
+            baseline. Median and MAD rather than mean and SD, because they are robust to the tail of
+            the decoy distribution.</li>
+          <li><b>Deployed anchors.</b> CDK2 m = −7.090, σ = 1.118 · DYRK1A m = −7.281,
+            σ = 1.008, w = 0.498 · GSK3B m = −6.474, σ = 0.911, w = 0.271 · PIM1 m = −6.078,
+            σ = 1.153, w = 0.685.</li>
+          <li><b>Reduction is keyed on molecule <i>and</i> prepared state, not molecule alone.</b>
+            Minimum Glide SP over five poses per prepared state and grid; then the minimum across
+            grids for multi-representative kinases, <i>preserving prepared-state identity</i>.</li>
+          <li><b>Why that matters:</b> 1,936 of 2,596 reference molecules (<b>74.6 %</b>) yield more
+            than one prepared state, and for 812 of the 2,521 scored at all twelve production
+            receptors (<b>32.2 %</b>) the best-scoring state is <b>not the same state at every
+            receptor</b>. Reducing on the molecule alone would combine a CDK2 score from one physical
+            state with antitarget scores from another, reporting a selectivity that no single
+            prepared structure possesses.</li>
+          <li>States lacking any required kinase-level score are excluded, never imputed.</li>
+        </ul>
+      </div>
+    </details>
+
+    <a class="jump" href="#selection">See where this score enters the generator ↓</a>
+
+  </div>
+</section>
+
+<!-- ================= 03-selection ================= -->
+<section class="section" id="selection" aria-labelledby="selection-h">
+  <div class="col">
+
+    <p class="section-eyebrow">Method: the objective</p>
+    <h2 class="section-title" id="selection-h">
+      <span class="section-title__mark" aria-hidden="true">&#128257;</span>
+      How selection works
+    </h2>
+
+    <p class="lede"><a href="#signal">Building the selectivity signal</a> built a measurement of
+    predicted off-target liability. This section is where that measurement enters the generator,
+    and just as importantly where it does not.</p>
+
+
+    <!-- ===================================================================
+         3.1 The ALGen loop
+         =================================================================== -->
+    <div class="disclosure-controls">
+      <button class="btn btn--quiet" type="button" data-expand-all>Expand all</button>
+      <button class="btn btn--quiet" type="button" data-collapse-all>Collapse all</button>
+    </div>
+
+    <h3 id="algen-loop">The ALGen loop</h3>
+
+    <p>ALGen runs two nested levels. Inside an <b>outer block</b>, repeated <b>inner loops</b> fit the
+    molecular model to the current task-specific corpus, generate proposals, and filter them
+    chemically, with no protein involved at any point. The survivors then enter a structure-based
+    <b>docking and selection stage</b>. The molecules it keeps are added to the corpus, and the next
+    block starts from there.</p>
+
+    <figure class="figure reveal">
+      <p class="figure__lead">One cycle, traced. Above the dashed line nothing in the pipeline knows
+      that a protein exists.</p>
+      <div class="figure__plate">
+        <svg viewBox="0 0 300 216" role="img"
+             aria-label="One ALGen cycle drawn as a four-stage loop. The specific set, which is the
+                         training corpus, feeds a generation stage that produces candidates and
+                         applies the chemistry filters with no protein involved. Below a dashed line
+                         the surviving molecules are docked against CDK2 and against the antitarget
+                         panel, then ranked by the selectivity score J and the top N are kept. Those
+                         selected molecules are added back to the specific set, so protein information
+                         reaches the generator only through which molecules re-enter its training
+                         corpus.">
+
+          <!-- the cycle track. Boxes are drawn on top, so the running dash shows only in the gaps. -->
+          <path d="M71 46H229V170H71Z" fill="none" stroke="var(--rule)" stroke-width="2"/>
+          <path class="loop-trace" pathLength="100" d="M71 46H229V170H71Z" fill="none"
+                stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- flow direction -->
+          <path d="M167 41.5L175 46L167 50.5Z" fill="var(--muted)"/>
+          <path d="M224.5 143L229 151L233.5 143Z" fill="var(--muted)"/>
+          <path d="M133 165.5L125 170L133 174.5Z" fill="var(--muted)"/>
+          <path d="M66.5 81L71 73L75.5 81Z" fill="var(--muted)"/>
+
+          <!-- protein-free above, structure-based below -->
+          <path d="M8 108H96M204 108H292" stroke="var(--rule)" stroke-width="1" stroke-dasharray="4 4"/>
+          <text x="150" y="111" font-size="9.5" fill="var(--faint)" text-anchor="middle">docking starts here</text>
+
+          <!-- 1 - the corpus -->
+          <rect x="16" y="18" width="110" height="56" rx="8" fill="var(--panel)" stroke="var(--rule)"/>
+          <text x="25" y="42" font-size="12" font-weight="600" fill="var(--ink)">specific set</text>
+          <text x="25" y="58" font-size="9.5" fill="var(--muted)">the training corpus</text>
+
+          <!-- 2 - generation, protein-free -->
+          <rect x="174" y="18" width="110" height="56" rx="8" fill="var(--panel)" stroke="var(--rule)"/>
+          <text x="183" y="40" font-size="12" font-weight="600" fill="var(--ink)">generate</text>
+          <text x="183" y="55" font-size="9.5" fill="var(--muted)">chemistry filters</text>
+          <text x="183" y="67" font-size="9.5" fill="var(--muted)">no protein</text>
+
+          <!-- 3 - docking -->
+          <rect x="174" y="142" width="110" height="56" rx="8" fill="var(--panel)" stroke="var(--rule)"/>
+          <text x="183" y="162" font-size="12" font-weight="600" fill="var(--ink)">dock</text>
+          <rect x="183" y="171" width="9" height="9" rx="1" fill="var(--target)"/>
+          <text x="196" y="178.5" font-size="9.5" fill="var(--muted)">CDK2</text>
+          <rect x="183" y="184" width="9" height="9" rx="1" fill="var(--guided)"/>
+          <text x="196" y="191.5" font-size="9.5" fill="var(--muted)">antitargets</text>
+
+          <!-- 4 - selection -->
+          <rect x="16" y="142" width="110" height="56" rx="8" fill="var(--panel)" stroke="var(--rule)"/>
+          <text x="25" y="162" font-size="12" font-weight="600" fill="var(--ink)">rank by J</text>
+          <text x="25" y="178" font-size="9.5" fill="var(--muted)">keep the top N</text>
+        </svg>
+      </div>
+      <figcaption><b>The loop.</b> A molecule re-enters the training corpus only by being selected.
+      The blue and teal marks are the same legend as the rest of the site: blue is CDK2, teal is the
+      antitarget panel.</figcaption>
+    </figure>
+
+    <div class="callout">
+      <strong class="callout__title">Docking guides selection, not gradients.</strong>
+      <p>Docking scores are never backpropagated through the autoencoder. Protein information reaches
+      the generator only through <i>which molecules are returned to its training corpus</i>.</p>
+    </div>
+
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">Technical details<span class="visually-hidden">: the ALGen loop and its architecture</span></summary>
+      <div class="disclosure__body">
+        <figure class="figure">
+          <p class="figure__lead">The full workflow as it appears on the poster, with both lanes and every
+          intermediate stage.</p>
+          <div class="figure__plate">
+            <img src="figures/gm_workflow.svg" loading="lazy" width="1140" height="649" decoding="async"
+                 alt="Schematic of the ALGen loop: inside an outer block, repeated inner loops train a
+                      deterministic sequence autoencoder on the current specific set, generate 5,000 SMILES per loop and
+                      apply the chemistry filters (QED at least 0.5, SA at most 3, Tanimoto below 0.5, MW
+                      280.85 to 700 Da, labelled 281 to 700 in the figure) with no protein involved at
+                      any point; the surviving filtered pool
+                      then passes CDK2 docking, the &minus;7.0 compute floor, ten-grid antitarget docking
+                      and the &minus;7.5 eligibility gate before molecules are ranked by the selectivity
+                      score J, and only the selected set is added back to the specific set.">
+          </div>
+          <p class="figure__hint">Small type on a phone. Open it full screen to read the labels.</p>
+          <button class="btn btn--quiet" type="button" data-lightbox="lb-workflow">Open the workflow figure</button>
+          <figcaption><b>The full workflow.</b> Two lanes: the protein-free generative loop, and the
+          docking-and-selection stage that returns molecules to the corpus.</figcaption>
+        </figure>
+
+        <dialog class="lightbox" id="lb-workflow" aria-label="ALGen workflow, full screen">
+          <div class="lightbox__bar">
+            <span class="lightbox__title">ALGen workflow</span>
+            <button class="lightbox__close" type="button" aria-label="Close">&#10005;</button>
+          </div>
+          <div class="lightbox__stage">
+            <img data-src="figures/gm_workflow.svg" width="1140" height="649"
+                 alt="The same ALGen workflow schematic, enlarged: the protein-free generative lane above
+                      and the docking-and-selection lane below, joined by the selected set returning to
+                      the specific set.">
+          </div>
+        </dialog>
+
+        <ul>
+          <li><b>Architecture, stated precisely.</b> The inherited implementation
+          (<a href="https://github.com/IFilella/ALGen-1">source</a>) operates on SMILES strings with a
+          <b>deterministic sequence autoencoder</b>. Candidates are produced by Gaussian perturbation
+          around encoded latent points, then decoding, an algorithmic exploration distribution rather
+          than a draw from a learned posterior. Nearby latent points need not decode to valid or
+          similar molecules.</li>
+
+          <li><b>Chemical filters</b> (inherited, fixed): QED &ge; 0.5, SA &le; 3, Tanimoto &lt; 0.5,
+          MW 280.85&ndash;700 Da. Novelty is evaluated against the <i>expanding</i> corpus, so
+          &ldquo;novel&rdquo; always means relative to an explicit reference population.</li>
+
+          <li><b>Fingerprints.</b> Radius-4 Morgan circular fingerprints as sparse unhashed count
+          vectors; similarity is count-vector Tanimoto.</li>
+
+          <li><b>Persistent state is the corpus, not the weights.</b>
+          <span class="mono">C<sub>b+1</sub> = C<sub>b</sub> &cup; S<sub>&beta;</sub>(P<sub>b</sub>)</span>.
+          Within each inner loop the same pretrained weights are reloaded and fitted to the current
+          corpus; fitted parameters are <b>not</b> carried forward.</li>
+
+          <li><b>Where the stochasticity comes from.</b> Each inner loop forms a new train/test
+          partition, and the generation seed is sampled from the temporary test subset, so
+          changing the partition changes the seed molecule and the latent neighbourhood explored. That
+          temporary test subset is part of the generation mechanism, not a held-out validation set.
+          This is why the downstream question in Results cannot be settled from a single run.</li>
+
+          <li><b>Relation to prior work.</b> The original CDK2 application was single-target; a later
+          extension handled multi-target <i>affinity</i> across coronavirus proteases. That is a
+          different problem: multi-target affinity rewards favourable binding everywhere,
+          whereas selectivity requires favourable target binding <i>together with deliberately
+          unfavourable</i> antitarget binding.</li>
+        </ul>
+      </div>
+    </details>
+
+
+    <!-- ===================================================================
+         3.2 What the score rewards
+         =================================================================== -->
+    <h3 id="score-j">What the score rewards</h3>
+
+    <p class="lede"><b>J</b> = <span class="t-target">CDK2 potency</span>
+    &minus; &beta;<sub>AT</sub> &middot; <span class="t-guided">antitarget liability</span>
+    &minus; promiscuity risk + size control</p>
+
+    <p>Four terms, each doing one job. Every input is a receptor-normalised z-score, so the terms are
+    on a common scale (see <a href="#one-scale">putting every receptor on one scale</a>).</p>
+
+    <table class="table table--pairs" role="table">
+      <caption>The four terms of the selectivity score J and what each one is for.</caption>
+      <thead role="rowgroup">
+        <tr role="row"><th role="columnheader" scope="col">Term</th><th role="columnheader" scope="col">What it does</th></tr>
+      </thead>
+      <tbody role="rowgroup">
+        <tr role="row">
+          <td role="cell" data-label="Term"><b class="t-target">+ target</b></td>
+          <td role="cell" data-label="What it does">Rewards stronger predicted CDK2 binding, capped.</td>
+        </tr>
+        <tr role="row">
+          <td role="cell" data-label="Term"><b class="t-guided">&minus; antitarget</b></td>
+          <td role="cell" data-label="What it does">Penalises predicted binding at the three <i>scored</i>
+          receptors.</td>
+        </tr>
+        <tr role="row">
+          <td role="cell" data-label="Term"><b>&minus; promiscuity</b></td>
+          <td role="cell" data-label="What it does">Penalises chemistry associated with broad, non-specific
+          binding.</td>
+        </tr>
+        <tr role="row">
+          <td role="cell" data-label="Term"><b>+ size control</b></td>
+          <td role="cell" data-label="What it does">Stops the score being won by simply shrinking the
+          molecule.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">Technical details<span class="visually-hidden">: the four terms of the selectivity score J</span></summary>
+      <div class="disclosure__body">
+        <ul>
+          <li><b>Design constraints J must satisfy.</b> Increase when predicted CDK2 binding
+          strengthens at fixed antitarget binding; increase when predicted antitarget binding weakens
+          at fixed CDK2 binding; <b>decrease when binding weakens uniformly across all receptors</b>.
+          The third is what the gate and the hinge together enforce.</li>
+
+          <li><b>Target.</b> <span class="mono">J<sub>CDK2</sub> = min(z<sub>CDK2</sub>,
+          z<sub>max</sub>)</span>, <span class="mono">z<sub>max</sub> = 3</span>. The cap stops
+          an extreme target score compensating without limit.</li>
+
+          <li><b>Antitarget.</b> A reliability-weighted <b>hinge</b>,
+          <span class="mono">J<sub>AT</sub> = &Sigma;<sub>k&isin;A</sub> w<sub>k</sub> &middot;
+          max(z<sub>k</sub>, 0) / &Sigma;<sub>k&isin;A</sub> w<sub>k</sub></span>. The hinge penalises
+          only antitarget scores <i>stronger</i> than that receptor&rsquo;s own reference level; weaker
+          scores earn no extra reward. Normalising by <span class="mono">&Sigma;w<sub>k</sub></span>
+          keeps the term on a comparable scale.</li>
+
+          <li><b>Promiscuity.</b> Four descriptors (aromatic rings, cLogP, HBD, TPSA)
+          with signs <b>fixed a priori</b> from their relationship with measured selectivity (+1 for
+          aromatic rings and cLogP, &minus;1 for HBD and TPSA).
+          <span class="mono">J<sub>risk</sub> = &Sigma;<sub>t</sub> max(&epsilon;<sub>t</sub>
+          z<sub>t</sub>, &minus;c)</span>, <span class="mono">c = 0.75</span>. Each term is
+          floored so no single favourable descriptor gives an unbounded offset to the docking terms,
+          while unfavourable values stay unbounded. The constants are frozen in the deployed objective
+          file and computed over the <b>2,514 calibration compounds with a complete receptor
+          profile</b> (111 S1, 492 S2, 1,911 S5), <i>not</i> over generated molecules: aromatic rings
+          &mu; 2.876 &sigma; 1.039 &middot; cLogP &mu; 3.338 &sigma; 1.287 &middot; HBD &mu; 2.206
+          &sigma; 0.988 &middot; TPSA &mu; 98.272 &sigma; 27.387.</li>
+
+          <li><b>Size.</b> <span class="mono">J<sub>size</sub> = &minus;[max(n<sub>lo</sub> &minus;
+          n<sub>H</sub>, 0) + max(n<sub>H</sub> &minus; n<sub>hi</sub>, 0)] / &lambda;</span>, window
+          [20, 34], <span class="mono">&lambda; = 5</span>. Zero inside the window; the upper bound
+          discourages size-driven score inflation, the lower bound stops trivially small molecules
+          being favoured.</li>
+        </ul>
+      </div>
+    </details>
+
+
+    <!-- ===================================================================
+         3.3 The CDK2 gate
+         =================================================================== -->
+    <h3 id="cdk2-gate">The CDK2 gate</h3>
+
+    <div class="callout">
+      <strong class="callout__title">First require s<sub>CDK2</sub> &le; &minus;7.5. Then rank by J.</strong>
+      <p>Antitarget avoidance cannot rescue a molecule that is not already a sufficiently strong
+      predicted CDK2 binder. Without this gate, the cheapest way to look selective is to bind
+      nothing.</p>
+    </div>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">Why this decision?<span class="visually-hidden">: the two docking thresholds</span></summary>
+      <div class="disclosure__body">
+
+        <p><b>Two thresholds with different jobs, easy to confuse.</b>
+        <b>&minus;7.0 is a compute floor</b>: only molecules below it proceed to antitarget docking at
+        all, a budget decision limiting how many molecules need ten-grid antitarget docking, with no
+        bearing on eligibility. <b>&minus;7.5 is the eligibility gate</b>: only molecules below it
+        receive J and enter the ranking.</p>
+
+        <figure class="figure reveal">
+          <p class="figure__lead">The two thresholds, on one axis.</p>
+          <div class="figure__plate">
+            <svg viewBox="0 0 300 150" role="img"
+                 aria-label="Two thresholds on the CDK2 Glide score, drawn on one axis running from
+                             minus 6 to minus 10, with stronger predicted binding to the right. Below
+                             minus 7.0, the compute floor, a molecule is docked against the antitarget
+                             panel at all. Below minus 7.5, the eligibility gate, it also receives the
+                             selectivity score J and enters the ranking; that narrower band is the
+                             eligible pool.">
+
+              <!-- compute floor band -->
+              <rect class="bar-grow" style="--i:0" x="85" y="28" width="195" height="22" rx="4"
+                    fill="var(--panel)" stroke="var(--rule)"/>
+              <text x="92" y="42.5" font-size="10.5" fill="var(--muted)">docked against the antitargets</text>
+
+              <!-- eligibility band -->
+              <rect class="bar-grow" style="--i:1" x="117.5" y="56" width="162.5" height="22" rx="4"
+                    fill="var(--target-bg)" stroke="var(--target)"/>
+              <text x="124.5" y="70.5" font-size="10.5" fill="var(--target)">ranked by J: eligible pool</text>
+
+              <!-- threshold drops -->
+              <path d="M85 28V104M117.5 56V104" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3"/>
+
+              <!-- axis -->
+              <path d="M20 104H280" stroke="var(--rule)" stroke-width="1.5"/>
+              <path d="M20 104v5M85 104v5M117.5 104v5M150 104v5M215 104v5M280 104v5"
+                    stroke="var(--rule)" stroke-width="1.5"/>
+              <text x="20" y="120" font-size="10.5" fill="var(--muted)" text-anchor="middle">&minus;6.0</text>
+              <text x="85" y="120" font-size="10.5" fill="var(--ink)" text-anchor="middle">&minus;7.0</text>
+              <text x="117.5" y="120" font-size="10.5" fill="var(--ink)" text-anchor="middle">&minus;7.5</text>
+              <text x="150" y="120" font-size="10.5" fill="var(--muted)" text-anchor="middle">&minus;8.0</text>
+              <text x="215" y="120" font-size="10.5" fill="var(--muted)" text-anchor="middle">&minus;9.0</text>
+              <text x="280" y="120" font-size="10.5" fill="var(--muted)" text-anchor="middle">&minus;10.0</text>
+
+              <text x="20" y="138" font-size="10.5" fill="var(--faint)">&larr; weaker predicted binding</text>
+              <text x="280" y="138" font-size="10.5" fill="var(--faint)" text-anchor="end">stronger &rarr;</text>
+            </svg>
+          </div>
+          <figcaption><b>The two thresholds.</b> Axis is the CDK2 Glide SP score; more negative means
+          stronger predicted binding, so it runs to the right. The compute floor decides what gets
+          docked; the gate decides what gets scored.</figcaption>
+        </figure>
+
+        <p><b>Calibration sensitivity.</b> Four parameters were swept on the reference
+        panel <i>before</i> deployment, each varied with the others held fixed.</p>
+
+        <div class="table-scroll" tabindex="0" role="group" aria-label="Calibration sweep, four parameters">
+          <table class="table">
+            <caption>Ranges examined, deployed values, and what each parameter actually controls.</caption>
+            <thead>
+              <tr><th scope="col">Parameter</th><th scope="col">Range examined</th>
+                  <th scope="col">Deployed</th><th scope="col">Outcome</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">gate &theta;</th><td class="mono">&minus;6.5 to &minus;9.0</td>
+                  <td class="mono">&minus;7.5</td>
+                  <td>broad stable region; [&minus;7.25, &minus;7.75] equivalent</td></tr>
+              <tr><th scope="row">&beta;<sub>AT</sub></th><td class="mono">0 to 3</td>
+                  <td class="mono">1.0</td>
+                  <td>admitted set unchanged; affects ordering only</td></tr>
+              <tr><th scope="row">z<sub>max</sub></th><td class="mono">1.0 to &infin;</td>
+                  <td class="mono">3.0</td>
+                  <td>binds on 1.7 % of admitted compounds</td></tr>
+              <tr><th scope="row">window</th><td class="mono">[24,30] to none</td>
+                  <td class="mono">[20,34]</td>
+                  <td>inactive for 84.7 % of admitted</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-scroll__hint">Scroll sideways for the full table.</p>
+
+        <ul>
+          <li>The gate is the only one of the four that changes <i>which molecules the objective can
+          see</i>, and the only one with a genuine trade-off: loosening it raises retained-set
+          selectivity but weakens the ability to demote a molecule that has been weakened at every
+          receptor; tightening below &minus;8.0 reduces retained-set selectivity monotonically until
+          the bootstrap interval crosses zero at &minus;8.5.</li>
+
+          <li>Removing the size window entirely changes 0.2 % of the selected set. It is a bound
+          imposed on the search, justified a priori because an unbounded preference for smaller
+          molecules optimises at a single atom.</li>
+
+          <li><b>Stated honestly:</b> because the same reference panel informed these choices,
+          benchmark performance at the deployed values is <b>not</b> independent validation of them.
+          Calibration establishes an operating regime; the controlled comparison in Results tests the
+          deployed objective against an ablated variant of <i>itself</i>, which only requires that the
+          rule was fixed in advance.</li>
+        </ul>
+      </div>
+    </details>
+
+    <a class="jump" href="#experiment">See exactly what was compared ↓</a>
+
+  </div>
+</section>
+
+<!-- ================= 04-experiment ================= -->
+<section class="section" id="experiment" aria-labelledby="experiment-h">
+  <div class="col">
+
+    <p class="section-eyebrow">Method: the comparison</p>
+    <h2 class="section-title" id="experiment-h">
+      <span class="section-title__mark" aria-hidden="true">⚖️</span>
+      The experiment
+    </h2>
+
+    <p class="lede">Everything in the two sections above exists so that one coefficient could be
+    switched off. The experiment is two complete runs of the same loop that differ in that
+    coefficient and in nothing else.</p>
+
+
+    <div class="disclosure-controls">
+      <button class="btn btn--quiet" type="button" data-expand-all>Expand all</button>
+      <button class="btn btn--quiet" type="button" data-collapse-all>Collapse all</button>
+    </div>
+
+    <h3 class="subsection" id="two-runs">Two runs, one difference</h3>
+
+    <p>Two complete ALGen runs were executed, differing only in β<sub>AT</sub>, the weight on the
+    antitarget term inside the selection score <i>J</i>. Same pretrained model, same 1,060-molecule
+    starting corpus, same schedule, same selection budget, same docking calculations.</p>
+
+    <div class="chips">
+      <span class="chip chip--guided">β<sub>AT</sub> = 1 · AT-guided</span>
+      <span class="chip chip--ablated">β<sub>AT</sub> = 0 · AT-ablated</span>
+    </div>
+
+    <p class="small">Named the same way throughout the site and on the printed poster: teal is the
+    AT-guided arm, terracotta the AT-ablated one.</p>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">Technical details<span class="visually-hidden">: the two runs and the one difference between them</span></summary>
+      <div class="disclosure__body">
+
+        <p>Nine outer blocks per run. Within a block, each inner loop refits the molecular model to
+        the current corpus, generates proposals and filters them; the corpus is cumulative and also
+        serves as the novelty reference, so &ldquo;novel&rdquo; is always relative to an explicit
+        population.</p>
+
+        <div class="table-scroll" tabindex="0" role="group" aria-label="Run schedule: block 1 against blocks 2 to 9">
+          <table class="table">
+            <caption>Run schedule. Identical in both arms.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Per outer block</th>
+                <th scope="col" class="num">Block 1</th>
+                <th scope="col" class="num">Blocks 2–9</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Inner loops</th><td class="num">40</td><td class="num">10</td></tr>
+              <tr><th scope="row">Proposals attempted per inner loop</th><td class="num">5,000</td><td class="num">5,000</td></tr>
+              <tr><th scope="row">Molecules retained</th><td class="num">2,000</td><td class="num">1,000</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p><b>Compute.</b> Batched autoregressive decoding cut the mean generation time
+        for 5,000 proposals from approximately 1,533 s to <b>9.61 s</b> per inner loop, a factor of
+        about 160. Tanimoto filtering then became the bottleneck, so the pipeline was reordered
+        (MW, QED and SA applied before similarity), accumulated-reference fingerprints were cached,
+        and the remaining comparisons were distributed over 16 CPU workers: approximately 278 s to
+        <b>14.62 s</b>, a factor of about 19. Specific-set training took 45.82 s per loop. Production
+        10-loop blocks ran in <b>12.36 min</b> on average, 9.5–14.5 min observed; before batching,
+        generation alone would have needed roughly 17 h over 40 inner loops.</p>
+
+        <p>Hardware: one NVIDIA H100 on an Intel Xeon Platinum 8460Y+ node; LigPrep and Glide on
+        Xeon Platinum 8160, 48 cores per job.</p>
+
+        <p class="small">These changes affected throughput only. The objective, the proposal count,
+        the filter thresholds and the selection logic are unchanged.</p>
+
+      </div>
+    </details>
+
+
+    <h3 class="subsection" id="four-populations">The four populations</h3>
+
+    <p>Each block produces four distinct sets of molecules, and almost every number reported later
+    belongs to exactly one of them. Three sit on the main path; the fourth is deliberately taken off
+    it.</p>
+
+    <figure class="figure reveal">
+      <p class="figure__lead">Three populations in sequence, plus one drawn aside as a readout.</p>
+      <div class="figure__plate">
+        <svg viewBox="0 0 300 244" role="img" aria-label="Flow of the four populations. The filtered set is everything that passes the chemistry filters. Molecules whose CDK2 docking score is −7.5 or lower form the eligible pool, the population the score J ranks; the top N of that pool become the selected set and are added back to the corpus. Separately, a random draw from the filtered set, taken with no CDK2 gate, forms the monitor sample, an unconditioned readout that never re-enters the loop.">
+
+          <g class="stage-fill" style="--i:0">
+            <rect x="6" y="6" width="168" height="42" rx="6" fill="var(--panel)" stroke="var(--rule)"/>
+            <text x="18" y="26" font-size="11" font-weight="700" fill="var(--ink)">Filtered set</text>
+            <text x="18" y="39" font-size="8.5" fill="var(--muted)">passes the chemistry filters</text>
+          </g>
+
+          <path d="M90 48V94" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+          <path d="M86 94h8l-4 6Z" fill="var(--muted)"/>
+          <text x="100" y="68" font-size="8.5" font-weight="700" fill="var(--target)">CDK2 gate</text>
+          <text x="100" y="80" font-size="8.5" fill="var(--body)">score ≤ −7.5</text>
+
+          <path d="M174 27H240V94" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 3"/>
+          <path d="M236 94h8l-4 6Z" fill="var(--muted)"/>
+          <text x="206" y="44" font-size="8.5" fill="var(--body)" text-anchor="middle">random draw,</text>
+          <text x="206" y="56" font-size="8.5" fill="var(--body)" text-anchor="middle">no CDK2 gate</text>
+
+          <g class="stage-fill" style="--i:1">
+            <rect x="6" y="100" width="168" height="42" rx="6" fill="var(--panel)" stroke="var(--target)"/>
+            <text x="18" y="120" font-size="11" font-weight="700" fill="var(--ink)">Eligible pool</text>
+            <text x="18" y="133" font-size="8.5" fill="var(--muted)">the population J ranks</text>
+          </g>
+
+          <g class="stage-fill" style="--i:2">
+            <rect x="186" y="100" width="108" height="42" rx="6" fill="var(--panel)" stroke="var(--muted)" stroke-dasharray="5 3"/>
+            <text x="240" y="120" font-size="11" font-weight="700" fill="var(--ink)" text-anchor="middle">Monitor sample</text>
+            <text x="240" y="133" font-size="8.5" fill="var(--muted)" text-anchor="middle">unconditioned readout</text>
+          </g>
+
+          <path d="M90 142V188" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+          <path d="M86 188h8l-4 6Z" fill="var(--muted)"/>
+          <text x="100" y="162" font-size="8.5" font-weight="700" fill="var(--ink)">rank by J</text>
+          <text x="100" y="174" font-size="8.5" fill="var(--body)">keep the top N</text>
+
+          <g class="stage-fill" style="--i:3">
+            <rect x="6" y="194" width="168" height="42" rx="6" fill="var(--panel)" stroke="var(--rule)"/>
+            <text x="18" y="214" font-size="11" font-weight="700" fill="var(--ink)">Selected set</text>
+            <text x="18" y="227" font-size="8.5" fill="var(--muted)">added back to the corpus</text>
+          </g>
+
+        </svg>
+      </div>
+      <figcaption>The four analysis populations of one outer block. The dashed branch is the monitor
+      sample: it is measured, but it never re-enters the loop.</figcaption>
+    </figure>
+
+    <div class="callout">
+      <strong class="callout__title">Why the monitor sample exists</strong>
+      <p>Every other population is conditioned on docking success. The monitor sample is the only
+      unconditioned readout of what the generator is producing.</p>
+    </div>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">Protocol and validation<span class="visually-hidden">: the four populations</span></summary>
+      <div class="disclosure__body">
+        <ul>
+          <li>The monitor sample is drawn from the filtered set <i>before</i> the −7.0 compute floor,
+            and docked against the complete panel regardless of CDK2 score. The two thresholds do
+            different jobs: <b>−7.0</b> decides which molecules are docked against the antitarget
+            panel at all, a budget decision; <b>−7.5</b> decides which molecules are eligible for
+            ranking.</li>
+          <li>Budget 1,500 molecules in block 1 and 500 per later block, drawn <i>across</i> the
+            block&rsquo;s inner loops rather than in a single draw, so a block&rsquo;s sample
+            aggregates several independently sampled latent neighbourhoods rather than one.</li>
+          <li>Realised counts: <b>1,489</b> in block 1 and 495–500 per block thereafter, in both
+            arms; <b>5,478 molecules per arm</b> in total.</li>
+        </ul>
+      </div>
+    </details>
+
+
+    <h3 class="subsection" id="block-one">Why block 1 is the controlled comparison</h3>
+
+    <p>Only block 1 supports a causal contrast. From block 2 onward the two runs train on
+    different accumulated corpora and diverge.</p>
+
+    <figure class="figure reveal">
+      <p class="figure__lead">One shared pool, then two separate histories.</p>
+      <div class="figure__plate">
+        <svg viewBox="0 0 300 128" role="img" aria-label="Both runs share a single candidate pool in block 1, so only the ranking differs there. From block 2 onward the AT-guided and AT-ablated runs train on different accumulated corpora and their trajectories separate, which is why only block 1 supports a causal contrast.">
+
+          <rect x="6" y="26" width="66" height="76" rx="4" fill="var(--panel)"/>
+          <text x="39" y="18" font-size="9.5" font-weight="700" fill="var(--ink)" text-anchor="middle">Block 1</text>
+          <text x="39" y="116" font-size="8.5" fill="var(--muted)" text-anchor="middle">shared pool</text>
+
+          <path d="M16 64H72" fill="none" stroke="var(--ink)" stroke-width="2"/>
+          <circle cx="39" cy="64" r="4" fill="var(--ink)"/>
+
+          <path d="M72 64C96 64 100 40 124 40h112" fill="none" stroke="var(--guided)" stroke-width="2"/>
+          <path d="M138 35v10M152 35v10M166 35v10M180 35v10M194 35v10M208 35v10M222 35v10M236 35v10"
+                fill="none" stroke="var(--guided)" stroke-width="2"/>
+          <text x="242" y="43" font-size="9" font-weight="700" fill="var(--guided-dk)">AT-guided</text>
+
+          <path d="M72 64C96 64 100 88 124 88h112" fill="none" stroke="var(--ablated)" stroke-width="2" stroke-dasharray="7 4"/>
+          <path d="M138 83v10M152 83v10M166 83v10M180 83v10M194 83v10M208 83v10M222 83v10M236 83v10"
+                fill="none" stroke="var(--ablated)" stroke-width="2"/>
+          <text x="242" y="91" font-size="9" font-weight="700" fill="var(--ablated-dk)">AT-ablated</text>
+
+          <text x="180" y="116" font-size="8.5" fill="var(--muted)" text-anchor="middle">Blocks 2–9 · corpora diverge</text>
+
+        </svg>
+      </div>
+      <figcaption>Block 1 is the one block in which the two arms are comparing the same molecules.
+      The solid line is the AT-guided run, the dashed line the AT-ablated one; the eight ticks on each
+      are blocks 2 to 9.</figcaption>
+    </figure>
+
+    <!-- "What this does not test" removed from here: it was the last visible content before
+         Results, so the reader crossed into the findings having just been told what the
+         experiment cannot do. The point is not lost: the details block below carries the
+         fuller frozen-generator version, and it is row 3 of the limitations table. -->
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">See the numbers<span class="visually-hidden">: why block 1 is the controlled comparison</span></summary>
+      <div class="disclosure__body">
+
+        <div class="table-scroll" tabindex="0" role="group" aria-label="How closely the two runs match in block 1">
+          <table class="table">
+            <caption>How closely the two block-1 records match, run against run.</caption>
+            <thead>
+              <tr><th scope="col">Block 1, each run</th><th scope="col" class="num">Records</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Molecular titles</th><td class="num">26,971</td></tr>
+              <tr><th scope="row">Intersection at parent-molecule level</th><td class="num">100 %</td></tr>
+              <tr><th scope="row">Byte-identical in raw SMILES and full docking profile</th><td class="num">26,470 (98.14 %)</td></tr>
+              <tr><th scope="row">Same parent chemistry, different prepared state</th><td class="num">501</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p><b>A reporting artefact, found and corrected.</b> The archived parent record is the
+        prepared state with the highest <i>J</i> under that run&rsquo;s <i>own</i> scoring
+        configuration. State choice alone can therefore create an apparent cross-run difference even
+        when the chemistry and the docking calculations are shared: <b>−0.025 z</b> for the worst
+        antitarget z in the monitor sample, and <b>−0.011 z</b> in the eligible pool.</p>
+
+        <p>A run-independent reduction over prepared states shared by both runs removes that
+        difference to numerical precision, and that reduction is what the controlled comparison uses.
+        The uncorrected figure is retained only as an empirical reporting floor for the downstream
+        question in <a href="#results-downstream">how far the preference reaches</a>.</p>
+
+        <p class="note">A frozen-generator, random-feedback or shuffled-feedback control, replicated
+        across independent stochastic runs, would be needed for the broader &ldquo;feedback versus no
+        feedback&rdquo; claim.</p>
+
+      </div>
+    </details>
+
+    <a class="jump" href="#results">See what changed in block 1 ↓</a>
+
+  </div>
+</section>
+
+<!-- ================= 05-results ================= -->
+<section class="section" id="results" aria-labelledby="results-h">
+  <div class="col">
+
+    <p class="section-eyebrow">What was found</p>
+    <h2 class="section-title" id="results-h">
+      <span class="section-title__mark" aria-hidden="true">📊</span>
+      Results
+    </h2>
+
+    <p class="lede">Two complete runs of the same generative workflow, differing in one coefficient:
+    whether the selection score carries an off-target penalty at all. Switching that coefficient off
+    changes which molecules the workflow keeps. In the single block where both runs are offered
+    exactly the same candidates,
+    <strong>13.95 %</strong> of the selected molecules differ, and all eight evaluated antitarget
+    kinases move toward weaker predicted binding, at a small cost in predicted CDK2 potency.</p>
+
+    <p>Four questions, in order. Does the antitarget term change selection at all? What is selection
+    actually doing inside each pool? What does the change cost in predicted potency? And how far does
+    the preference reach into what the generator produces later?</p>
+
+    <p class="note"><b>The five words this section leans on</b>, in case you came straight here
+    from the top.
+    <b>Docking</b> places a molecule in a protein pocket <i>in silico</i> and scores the fit; every
+    number here is predicted, never measured.
+    <b>z</b> is a docking score expressed against that receptor's own baseline, so one receptor's
+    scores can be compared with another's (<a href="#one-scale">how</a>).
+    <b>β<sub>AT</sub></b> is the one coefficient the two runs differ in: the weight on the antitarget
+    penalty inside the selection score <i>J</i>. <b>AT-guided</b> is β<sub>AT</sub> = 1,
+    <b>AT-ablated</b> is β<sub>AT</sub> = 0 (<a href="#score-j">what J rewards</a>).
+    <b>Scored</b> receptors enter that penalty; <b>held-out</b> receptors are measured but never
+    optimised against (<a href="#reliable-useful">why the split</a>).</p>
+
+    <div class="disclosure-controls">
+      <button class="btn btn--quiet" type="button" data-expand-all>Expand all</button>
+      <button class="btn btn--quiet" type="button" data-collapse-all>Collapse all</button>
+    </div>
+
+
+    <!-- ===================================================================
+         5.1  THE HEADLINE: the block-1 controlled ablation
+         =================================================================== -->
+
+    <h3 class="subsection" id="results-ablation">Changing only the antitarget term changes selection</h3>
+
+    <p>This is the headline, and it is the one comparison the design supports causally. In block 1
+    both runs see an identical candidate pool: the same molecules, the same docking calculations.
+    <strong>26,062</strong> molecules satisfy the common eligibility criterion; each selector keeps
+    <strong>2,000</strong>. They agree on <strong>1,721</strong>, and each keeps <strong>279</strong>
+    the other does not. That is a Jaccard overlap of 0.755, or equivalently: changing only
+    β<sub>AT</sub> changed <strong>13.95 %</strong> of the selected identities.</p>
+
+    <figure class="figure reveal">
+      <p class="figure__lead">One pool, two selectors, two overlapping selections.</p>
+      <div class="figure__plate">
+        <svg viewBox="0 0 260 146" role="img"
+             aria-label="From one shared pool of 26,062 eligible molecules, the AT-guided and
+                         AT-ablated selectors each keep 2,000; 1,721 molecules are kept by both and
+                         279 are unique to each run.">
+          <rect class="stage-fill" style="--i:0" x="8" y="8" width="244" height="26" rx="4"
+                fill="var(--panel)" stroke="var(--rule)"/>
+          <text x="130" y="25" text-anchor="middle" font-size="10" fill="var(--ink)">26,062 eligible molecules · one shared pool</text>
+
+          <path d="M66 34 V48 M194 34 V48" stroke="var(--rule)" stroke-width="1.5" fill="none"/>
+          <path d="M62 46 66 52 70 46 Z M190 46 194 52 198 46 Z" fill="var(--rule)"/>
+
+          <rect class="stage-fill" style="--i:1" x="8" y="52" width="116" height="32" rx="4"
+                fill="var(--guided-bg)" stroke="var(--guided)"/>
+          <text x="66" y="67" text-anchor="middle" font-size="9.5" fill="var(--guided-dk)" font-weight="700">AT-guided</text>
+          <text x="66" y="79" text-anchor="middle" font-size="9" fill="var(--guided-dk)">keeps 2,000</text>
+
+          <rect class="stage-fill" style="--i:2" x="136" y="52" width="116" height="32" rx="4"
+                fill="var(--ablated-bg)" stroke="var(--ablated)"/>
+          <text x="194" y="67" text-anchor="middle" font-size="9.5" fill="var(--ablated-dk)" font-weight="700">AT-ablated</text>
+          <text x="194" y="79" text-anchor="middle" font-size="9" fill="var(--ablated-dk)">keeps 2,000</text>
+
+          <path d="M66 84 V96 M194 84 V96" stroke="var(--rule)" stroke-width="1.5" fill="none"/>
+
+          <rect class="bar-grow" style="--i:0" x="8" y="100" width="29.9" height="24"
+                fill="var(--guided)"/>
+          <rect class="bar-grow" style="--i:1" x="37.9" y="100" width="184.3" height="24"
+                fill="var(--panel)" stroke="var(--rule)"/>
+          <rect class="bar-grow" style="--i:2" x="222.2" y="100" width="29.9" height="24"
+                fill="var(--ablated)"/>
+          <text x="130" y="116" text-anchor="middle" font-size="10" fill="var(--ink)" font-weight="700">1,721 kept by both</text>
+
+          <text x="8" y="139" font-size="9" fill="var(--guided-dk)">279 only AT-guided</text>
+          <text x="252" y="139" text-anchor="end" font-size="9" fill="var(--ablated-dk)">279 only AT-ablated</text>
+        </svg>
+      </div>
+      <figcaption><b>Anatomy of the block-1 comparison.</b> Segment widths are proportional to counts.
+      The two selectors are handed the same 26,062 candidates and the same budget; only the ranking
+      rule differs.</figcaption>
+    </figure>
+
+    <p>Swapping 14 % of the set is enough to move the whole selection. Comparing the two
+    2,000-molecule selected sets, the <b>median</b> receptor-normalised z shifts at all eight
+    antitarget receptors in the direction the objective was built to produce, and at CDK2 in the
+    opposite direction, which is the cost.</p>
+
+    <figure class="figure reveal">
+      <p class="figure__lead">Improvement is plotted as −Δz, so every bar points the same way; for
+      CDK2 the same quantity is a cost, not a gain.</p>
+      <div class="figure__plate">
+        <svg viewBox="0 0 300 266" role="img"
+             aria-label="All eight antitarget receptors shift toward weaker predicted binding under
+                         antitarget guidance, improvements from 0.088 z at CDK5 to 0.180 z at CDK9,
+                         with the three scored receptors between 0.158 and 0.178; CDK2 shifts by
+                         0.058 z in the opposite direction, which is the cost.">
+          <path d="M58 18 V256" stroke="var(--rule)" stroke-width="1"/>
+          <path d="M148 18 V256 M238 18 V256" stroke="var(--rule)" stroke-width="1"
+                stroke-dasharray="2 3"/>
+          <text x="58" y="12" text-anchor="middle" font-size="8" fill="var(--faint)">0</text>
+          <text x="148" y="12" text-anchor="middle" font-size="8" fill="var(--faint)">0.10</text>
+          <text x="238" y="12" text-anchor="middle" font-size="8" fill="var(--faint)">0.20 z</text>
+
+          <text x="4" y="30" font-size="9" fill="var(--faint)" letter-spacing="0.06em">TARGET</text>
+          <rect class="bar-grow" style="--i:0" x="58" y="34" width="52.2" height="13"
+                fill="var(--target)"/>
+          <text x="54" y="44" text-anchor="end" font-size="10.5" fill="var(--ink)">CDK2</text>
+          <text x="115" y="44" font-size="9.5" fill="var(--body)">0.058 (cost)</text>
+
+          <text x="4" y="68" font-size="9" fill="var(--faint)" letter-spacing="0.06em">SCORED: IN THE OBJECTIVE</text>
+          <rect class="bar-grow" style="--i:1" x="58" y="72" width="154.8" height="13"
+                fill="var(--guided)"/>
+          <text x="54" y="82" text-anchor="end" font-size="10.5" fill="var(--ink)">DYRK1A</text>
+          <text x="218" y="82" font-size="9.5" fill="var(--body)">0.172</text>
+          <rect class="bar-grow" style="--i:2" x="58" y="93" width="142.2" height="13"
+                fill="var(--guided)"/>
+          <text x="54" y="103" text-anchor="end" font-size="10.5" fill="var(--ink)">GSK3B</text>
+          <text x="205" y="103" font-size="9.5" fill="var(--body)">0.158</text>
+          <rect class="bar-grow" style="--i:3" x="58" y="114" width="160.2" height="13"
+                fill="var(--guided)"/>
+          <text x="54" y="124" text-anchor="end" font-size="10.5" fill="var(--ink)">PIM1</text>
+          <text x="223" y="124" font-size="9.5" fill="var(--body)">0.178</text>
+
+          <text x="4" y="152" font-size="9" fill="var(--faint)" letter-spacing="0.06em">HELD OUT: NEVER OPTIMISED AGAINST</text>
+          <rect class="bar-grow" style="--i:4" x="58" y="156" width="117" height="13"
+                fill="var(--held)"/>
+          <text x="54" y="166" text-anchor="end" font-size="10.5" fill="var(--ink)">CDK1</text>
+          <text x="180" y="166" font-size="9.5" fill="var(--body)">0.130</text>
+          <rect class="bar-grow" style="--i:5" x="58" y="177" width="79.2" height="13"
+                fill="var(--held)"/>
+          <text x="54" y="187" text-anchor="end" font-size="10.5" fill="var(--ink)">CDK5</text>
+          <text x="142" y="187" font-size="9.5" fill="var(--body)">0.088</text>
+          <rect class="bar-grow" style="--i:6" x="58" y="198" width="107.1" height="13"
+                fill="var(--held)"/>
+          <text x="54" y="208" text-anchor="end" font-size="10.5" fill="var(--ink)">CDK6</text>
+          <text x="170" y="208" font-size="9.5" fill="var(--body)">0.119</text>
+          <rect class="bar-grow" style="--i:7" x="58" y="219" width="85.5" height="13"
+                fill="var(--held)"/>
+          <text x="54" y="229" text-anchor="end" font-size="10.5" fill="var(--ink)">CDK7</text>
+          <text x="148" y="229" font-size="9.5" fill="var(--body)">0.095</text>
+          <rect class="bar-grow" style="--i:8" x="58" y="240" width="162" height="13"
+                fill="var(--held)"/>
+          <text x="54" y="250" text-anchor="end" font-size="10.5" fill="var(--ink)">CDK9</text>
+          <text x="225" y="250" font-size="9.5" fill="var(--body)">0.180</text>
+        </svg>
+      </div>
+      <figcaption><b>Receptor-level effect of the antitarget term, block 1.</b> Median shift in
+      receptor-normalised z between the two selected sets. Group headings, not colour, carry the role
+      of each receptor.</figcaption>
+    </figure>
+
+    <div class="callout">
+      <strong class="callout__title">How to read Δz</strong>
+      <p>Δz = AT-guided − AT-ablated. <strong>For an antitarget, negative means weaker predicted
+      binding, the desired direction. For CDK2, negative is the cost.</strong> All eight antitarget
+      95 % intervals exclude zero.</p>
+    </div>
+
+    <p>The five held-out receptors were never in the objective. They move anyway, which suggests the
+    effect is not confined to the three receptors being optimised. They are still evaluated inside the
+    same Glide-based framework, though, so this is corroboration rather than independent
+    confirmation.</p>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">See the numbers<span class="visually-hidden">: changing the antitarget term changes selection</span></summary>
+      <div class="disclosure__body">
+
+        <div class="table-scroll" tabindex="0" role="group"
+             aria-label="Receptor-level effect of the antitarget term, block 1">
+          <table class="table">
+            <caption>Δz = AT-guided − AT-ablated, block 1. Negative is the desired direction for an
+            antitarget; for CDK2 it is the cost.</caption>
+            <thead>
+              <tr><th scope="col">Receptor</th><th scope="col">Role</th>
+                  <th scope="col" class="num">Δz</th><th scope="col" class="num">improvement</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">CDK2</th>
+                  <td><span class="role role--target">target</span></td>
+                  <td class="num">−0.058</td><td class="num">cost</td></tr>
+              <tr><th scope="row">DYRK1A</th>
+                  <td><span class="role role--scored">scored</span></td>
+                  <td class="num">−0.172</td><td class="num">0.172</td></tr>
+              <tr><th scope="row">GSK3B</th>
+                  <td><span class="role role--scored">scored</span></td>
+                  <td class="num">−0.158</td><td class="num">0.158</td></tr>
+              <tr><th scope="row">PIM1</th>
+                  <td><span class="role role--scored">scored</span></td>
+                  <td class="num">−0.178</td><td class="num">0.178</td></tr>
+              <tr><th scope="row">CDK1</th>
+                  <td><span class="role role--held">held out</span></td>
+                  <td class="num">−0.130</td><td class="num">0.130</td></tr>
+              <tr><th scope="row">CDK5</th>
+                  <td><span class="role role--held">held out</span></td>
+                  <td class="num">−0.088</td><td class="num">0.088</td></tr>
+              <tr><th scope="row">CDK6</th>
+                  <td><span class="role role--held">held out</span></td>
+                  <td class="num">−0.119</td><td class="num">0.119</td></tr>
+              <tr><th scope="row">CDK7</th>
+                  <td><span class="role role--held">held out</span></td>
+                  <td class="num">−0.095</td><td class="num">0.095</td></tr>
+              <tr><th scope="row">CDK9</th>
+                  <td><span class="role role--held">held out</span></td>
+                  <td class="num">−0.180</td><td class="num">0.180</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-scroll__hint">Scroll sideways if the last column is cut off.</p>
+
+        <h4>Panel-level summaries, with 95 % bootstrap intervals</h4>
+        <ul>
+          <li>Worst <strong>scored</strong> antitarget: <span class="mono">−0.204</span>
+            [−0.233, −0.167].</li>
+          <li>Worst <strong>held-out</strong> antitarget: <span class="mono">−0.140</span>
+            [−0.167, −0.113].</li>
+          <li><strong>CDK2</strong>: <span class="mono">−0.058</span> [−0.080, −0.037].</li>
+        </ul>
+
+        <h4>Robustness</h4>
+        <ul>
+          <li><strong>Physicochemical adjustment</strong>: predefined, over MW, heavy atoms, cLogP,
+            QED, HBD, TPSA, aromatic rings and rotatable bonds. Worst scored antitarget
+            −0.1964 → −0.1779 [−0.1979, −0.1578], <strong>91 % of the effect retained</strong>;
+            M<sub>scored</sub> +0.1424 → +0.1399 [+0.1199, +0.1607], <strong>98 % retained</strong>.
+            The shift is therefore not a by-product of the guided run simply picking different-sized
+            or more lipophilic molecules.</li>
+          <li><strong>Scaffold-clustered resampling</strong>: CDK2 z −0.058 [−0.078, −0.033];
+            M<sub>scored</sub> +0.150 [+0.123, +0.188]; M<sub>held</sub> +0.064 [+0.038, +0.092];
+            worst scored antitarget −0.204 [−0.233, −0.167].</li>
+          <li><strong>Dropping the dominant chemistry</strong>: removing the most common
+            Bemis–Murcko scaffold, then the top five: CDK2 z −0.063 / −0.070; M<sub>scored</sub>
+            +0.149 / +0.150; worst scored antitarget −0.200 / −0.204. Not a single-scaffold
+            artefact.</li>
+        </ul>
+
+        <p class="note"><strong>What the intervals are.</strong> Bootstrap intervals here quantify
+        composition uncertainty within a fixed candidate experiment. They do not estimate variability
+        across independent algorithmic trajectories. That is the separate question taken up
+        below.</p>
+
+      </div>
+    </details>
+
+
+    <!-- ===================================================================
+         5.2  WITHIN-POOL BEHAVIOUR
+         =================================================================== -->
+
+    <h3 class="subsection" id="results-within-pool">What selection does inside each pool</h3>
+
+    <p>Block 1 shows that the two selectors disagree. The next question is what each of them is doing
+    to the population it was handed. For every run and every block, the selected set was compared
+    against <strong>4,000</strong> equal-sized random subsets drawn from <em>that same eligible
+    pool</em>. This isolates what selection changes, within the molecules actually available in that
+    block, so a difference cannot be attributed to one run simply having better raw material.</p>
+
+    <div class="table-scroll" tabindex="0" role="group"
+         aria-label="Within-pool selection gains against random subsets, both runs, nine blocks">
+      <table class="table">
+        <caption>Median across the nine blocks of the selector's gain over the median of 4,000
+        equal-sized random subsets of the same eligible pool. Positive is the favourable direction in
+        every row. In brackets: the number of the nine blocks in which the observed selection fell
+        outside the random-subset interval in the favourable direction.</caption>
+        <thead>
+          <tr><th scope="col">Metric</th>
+              <th scope="col" class="num">AT-guided</th>
+              <th scope="col" class="num">AT-ablated</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">CDK2 enrichment</th>
+              <td class="num">+0.271 (9/9)</td><td class="num">+0.402 (9/9)</td></tr>
+          <tr><th scope="row">Scored-antitarget suppression</th>
+              <td class="num">+0.133 (9/9)</td><td class="num">−0.152 (9/9 opposite)</td></tr>
+          <tr><th scope="row">Held-out margin</th>
+              <td class="num">+0.147 (9/9)</td><td class="num">+0.098 (8/9)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Read the middle row. Under antitarget guidance the scored antitargets fall outside the
+    random-subset interval toward <em>weaker</em> predicted binding in all nine blocks. Remove the term and the same selector pushes
+    them the other way, also in all nine blocks. That sign reversal is the clearest single statement
+    of what the coefficient does.</p>
+
+    <p>The first row is the honest counterweight: the ablated run enriches CDK2 harder
+    (+0.402 against +0.271). It optimises a narrower objective, and it gets more of it.</p>
+
+    <p class="note"><strong>Read the third row as a margin, not a suppression.</strong> Relative to
+    random selection from the same pool, the worst held-out receptor moves toward <em>stronger</em>
+    predicted binding in <em>both</em> arms (raw z shift, not the oriented gain of the table above:
+    +0.068 AT-guided against +0.205 AT-ablated); the margin
+    improves because predicted CDK2 binding rises faster. Within-pool suppression of off-target
+    binding is demonstrated only for the three scored receptors.</p>
+
+    <figure class="figure reveal">
+      <p class="figure__lead">The same contrast, block by block, for CDK2, the worst scored antitarget
+      and the worst held-out antitarget.</p>
+      <div class="figure__plate">
+        <img src="figures/fig_results_selection_trajectories_v2.svg" loading="lazy" decoding="async"
+             width="535" height="511"
+             alt="Three stacked panels tracking median receptor-normalised z across the nine outer
+                  blocks: for the worst scored antitarget and the worst held-out antitarget the
+                  AT-guided selected set sits below the AT-ablated selected set in every block,
+                  weaker predicted off-target binding, the intended direction, while for CDK2 the
+                  ablated run sits slightly higher, having enriched a narrower objective harder; the
+                  dashed eligible-pool traces sit far closer together than the selected sets and
+                  coincide in block 1, so most of the contrast is produced by selection rather than by
+                  the pools; block 1 is shaded because it is the one block with a shared pool.">
+      </div>
+      <p class="figure__hint">Three stacked panels, small on a phone. Tap to enlarge.</p>
+      <p><button class="btn btn--quiet" type="button" data-lightbox="lb-trajectories">Enlarge this
+      figure</button></p>
+      <figcaption><b>Within-pool selection behaviour</b>, both runs, blocks 1–9. Solid
+      traces are the selected sets, dashed traces the eligible pools they were drawn from; block 1 is
+      shaded because it is the one block with a shared pool.</figcaption>
+    </figure>
+
+    <dialog class="lightbox" id="lb-trajectories"
+            aria-label="Within-pool selection behaviour across the nine blocks, all three panels">
+      <div class="lightbox__bar">
+        <span class="lightbox__title">Selection trajectories, blocks 1–9</span>
+        <button class="lightbox__close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="lightbox__stage">
+        <img data-src="figures/fig_results_selection_trajectories_v2.svg" width="535" height="511"
+             alt="Enlarged view of the three stacked trajectory panels: the AT-guided selected set
+                  sits below the AT-ablated set in every block for the worst scored antitarget and
+                  the worst held-out antitarget, while for CDK2 the ablated run sits slightly higher;
+                  the dashed eligible-pool traces sit far closer together than the selected sets and
+                  coincide in the shaded block 1.">
+      </div>
+    </dialog>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">See the numbers<span class="visually-hidden">: what selection does inside each pool</span></summary>
+      <div class="disclosure__body">
+
+        <div class="table-scroll" tabindex="0" role="group"
+             aria-label="Further within-pool selection gains">
+          <table class="table">
+            <caption>Further within-pool metrics. Median across the nine blocks of the selector's gain over
+            the median of 4,000 equal-sized random subsets of the same eligible pool, with the number
+            of blocks whose observed selection fell outside the random-subset interval in the
+            favourable direction.</caption>
+            <thead>
+              <tr><th scope="col">Metric</th>
+                  <th scope="col" class="num">AT-guided</th>
+                  <th scope="col" class="num">AT-ablated</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">M<sub>scored</sub> margin</th>
+                  <td class="num">+0.341 (9/9)</td><td class="num">+0.192 (9/9)</td></tr>
+              <tr><th scope="row">M′<sub>held</sub>, restricted to CDK7 and CDK9</th>
+                  <td class="num">+0.178 (9/9)</td><td class="num">+0.118 (8/9)</td></tr>
+              <tr><th scope="row">QED</th>
+                  <td class="num">−0.048 (9/9)</td><td class="num">−0.044 (9/9)</td></tr>
+              <tr><th scope="row">Envelope compliance</th>
+                  <td class="num">−0.393</td><td class="num">−0.385</td></tr>
+              <tr><th scope="row">cLogP change</th>
+                  <td class="num">−1.186</td><td class="num">−1.378</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p><strong>Both selectors trade a little drug-likeness for docking score.</strong> The QED and
+        envelope rows are negative in both arms. That is a real cost of the objective, and it is
+        reported rather than hidden, but it is close to identical in the two runs, so it is a
+        property of docking-driven selection, not of the antitarget term.</p>
+
+        <p><strong>The estimand.</strong>
+        G<sub>c,b</sub>(m) = d<sub>m</sub>[T<sub>m</sub>(S<sub>c,b</sub>) −
+        median<sub>r</sub> T<sub>m</sub>(R<sub>c,b,r</sub>)], with d<sub>m</sub> orienting the sign so
+        that positive is always favourable. Every comparison is made within one run and one block.</p>
+
+        <p class="note"><strong>Statistical unit warning.</strong> Molecules within a block share
+        generator parameters, a corpus and a docking batch. They are not independent replicas. Blocks
+        2–9 are serially dependent through the accumulated corpus. No block-level count is interpreted
+        here as between-run replication.</p>
+
+      </div>
+    </details>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">Technical details<span class="visually-hidden">: reward-decile response</span></summary>
+      <div class="disclosure__body">
+
+        <h4>Reward-decile response: what a higher reward actually buys</h4>
+        <p>Eligible molecules from all nine blocks were pooled within each run, ranked by
+        <em>that run's own</em> reward, and split into ten equal deciles
+        (n = 74,649 AT-guided; n = 83,224 AT-ablated).</p>
+        <ul>
+          <li><strong>With the antitarget term</strong>, a higher reward means stronger predicted CDK2
+            binding <em>and weaker</em> predicted binding at all three scored receptors, with the same
+            pattern more weakly across the held-out set.</li>
+          <li><strong>Without it</strong>, a higher reward means broadly stronger predicted binding
+            everywhere: a potent profile rather than a selective one.</li>
+        </ul>
+
+        <p class="note"><strong>Caveat.</strong> Because the two configurations differ through
+        β<sub>AT</sub>, the decile index is a rank <em>within each run</em>, not a common value of J.
+        This is descriptive. It does not replace the block-1 comparison, because the candidate pools
+        differ after block 1.</p>
+
+        <figure class="figure figure--desktop-only">
+          <p class="figure__lead">One panel per receptor, median receptor-normalised z against
+          within-run reward decile.</p>
+          <div class="figure__plate">
+            <img src="figures/fig_reward_decile.svg" loading="lazy" decoding="async"
+                 width="486" height="409"
+                 alt="Nine panels, one per receptor, of median receptor-normalised z against
+                      within-run reward decile: under antitarget guidance a higher reward means
+                      stronger predicted CDK2 binding together with weaker predicted binding at all
+                      three scored receptors, whereas with the antitarget term removed a higher reward
+                      means broadly stronger predicted binding everywhere, a potent profile rather
+                      than a selective one, and the held-out receptors show the same contrast more
+                      weakly.">
+          </div>
+          <p class="figure__hint">Nine panels do not stay legible in a phone-width column, so on a
+          narrow screen the figure opens full screen instead.</p>
+          <p><button class="btn btn--quiet" type="button" data-lightbox="lb-decile">View all nine
+          receptors full screen</button></p>
+          <figcaption><b>Reward-decile response</b>, nine receptors, both runs.
+          <b>Colour note:</b> this figure keeps the thesis palette, where <b>blue is AT-guided</b> and
+          <b>orange is AT-ablated</b>. Everywhere else on this page blue means CDK2 and teal means
+          AT-guided. The two series also share a marker style, so in this one figure colour is the
+          only encoding. Read the legend, not the hue.</figcaption>
+        </figure>
+
+      </div>
+    </details>
+
+
+    <!-- ===================================================================
+         5.3  THE TRADE-OFF
+         =================================================================== -->
+
+    <h3 class="subsection" id="results-tradeoff">The potency–selectivity trade-off</h3>
+
+    <p>No single molecule maximises both predicted potency and predicted selectivity. The
+    non-dominated candidates, those that cannot be improved on one axis without giving up the other,
+    trace a frontier. Among molecules already <em>predicted</em> to bind CDK2 strongly, the
+    AT-guided run reaches larger predicted selectivity margins.</p>
+
+    <figure class="figure reveal">
+      <p class="figure__lead">Predicted CDK2 binding strength against predicted CDK2–antitarget
+      separation, over all selected molecules.</p>
+      <div class="figure__plate">
+        <img src="figures/fig_pareto_poster_bare.svg" loading="lazy" decoding="async"
+             width="480" height="303"
+             alt="Predicted CDK2 binding strength plotted against predicted CDK2–antitarget
+                  separation for all selected molecules (grey hexbin density): the best trade-off
+                  molecules of the AT-guided run (teal circles) and the AT-ablated run (terracotta
+                  squares) trace two frontiers that neither dominates outright, but among molecules
+                  already predicted to bind CDK2 strongly the AT-guided frontier holds a far larger
+                  predicted separation (3.5 versus 0.8 z at the strongest predicted potency); both
+                  runs reach their single largest separations outside that strong-CDK2 tail.">
+      </div>
+      <p class="figure__hint">Dense hexbin, small on a phone. Tap to enlarge.</p>
+      <p><button class="btn btn--quiet" type="button" data-lightbox="lb-pareto">Enlarge this
+      figure</button></p>
+      <figcaption><b>Trade-off landscape</b> over all selected molecules, both runs. Marker
+      shape carries the run as well as colour: circles AT-guided, squares AT-ablated.</figcaption>
+    </figure>
+
+    <dialog class="lightbox" id="lb-pareto"
+            aria-label="Trade-off landscape over all selected molecules, both runs">
+      <div class="lightbox__bar">
+        <span class="lightbox__title">Potency–selectivity trade-off</span>
+        <button class="lightbox__close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="lightbox__stage">
+        <img data-src="figures/fig_pareto_poster_bare.svg" width="480" height="303"
+             alt="Enlarged view of the trade-off landscape: grey hexbin density of all selected
+                  molecules, with the AT-guided frontier in teal circles and the AT-ablated frontier
+                  in terracotta squares; among molecules already predicted to bind CDK2 strongly the
+                  guided frontier holds a far larger predicted separation, 3.5 against 0.8 z at the
+                  strongest predicted potency.">
+      </div>
+    </dialog>
+
+    <details class="disclosure disclosure--caution">
+      <summary class="disclosure__summary">What this does not show<span class="visually-hidden">: the potency-selectivity trade-off</span></summary>
+      <div class="disclosure__body">
+
+        <p><strong>The honest complication.</strong> Across all 10,000 selected molecules per run, the
+        <em>AT-ablated</em> run retains <em>more</em> molecules in the deep CDK2 tail. This is exactly
+        what a narrower objective should do, and it is the strongest thing that can be said against
+        the guided run.</p>
+
+        <div class="table-scroll" tabindex="0" role="group"
+             aria-label="Share of the selected set in the deep CDK2 tail, both runs">
+          <table class="table">
+            <caption>Percentage of each run's 10,000 selected molecules below the given CDK2 docking
+            score.</caption>
+            <thead>
+              <tr><th scope="col">CDK2 score threshold</th>
+                  <th scope="col" class="num">AT-guided</th>
+                  <th scope="col" class="num">AT-ablated</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">s<sub>CDK2</sub> ≤ −9.0</th>
+                  <td class="num">20.0 %</td><td class="num">25.7 %</td></tr>
+              <tr><th scope="row">s<sub>CDK2</sub> ≤ −9.5</th>
+                  <td class="num">7.8 %</td><td class="num">10.4 %</td></tr>
+              <tr><th scope="row">s<sub>CDK2</sub> ≤ −10.0</th>
+                  <td class="num">2.7 %</td><td class="num">3.3 %</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p><strong>But conditioned on already being in that tail</strong>, the AT-guided set has the
+        larger median scored-panel margin in all nine blocks, at similar median CDK2 scores. Applying
+        the random-subset procedure <em>within</em> the restricted tail at τ = −9.5 gives median gains
+        of about <strong>+0.22</strong> (M<sub>scored</sub>) and <strong>+0.17 z</strong>
+        (scored-antitarget suppression), favourable in 9/9 blocks. <strong>The selectivity gain is not
+        bought by abandoning potency</strong>. It is achieved among molecules that are already
+        potent.</p>
+
+        <p>Two candidates from the frontier make the shape of the trade-off concrete:
+        <span class="mono">5_1562</span> combines a CDK2 docking score of −11.78 with
+        M<sub>scored</sub> = 3.52; <span class="mono">7_2710</span> gives up some predicted potency
+        (−10.17) for a larger margin of 4.19.</p>
+
+        <p><strong>Scaffold concentration is a real cost.</strong> Selection concentrates the
+        population into fewer Bemis–Murcko scaffold families than random selection would
+        (ΔU<sub>scaf</sub> negative across blocks, in both runs). Selection pressure buys the margin
+        and pays in diversity.</p>
+
+        <p><button class="btn btn--quiet" type="button" data-lightbox="lb-tail">View the two-panel
+        Pareto landscape (1 MB)</button></p>
+        <p class="small">Held back deliberately: the two-panel version carries the held-out panel as
+        well as the scored one, and is a 1 MB file that only a reader who wants it should pay
+        for.</p>
+
+      </div>
+    </details>
+
+
+    <!-- ===================================================================
+         5.4  DOWNSTREAM PERSISTENCE: scope, and what evidence comes next
+         =================================================================== -->
+
+    <h3 class="subsection" id="results-downstream">How far does the preference reach?</h3>
+
+    <p>The selection-level result is solid: the antitarget term demonstrably changes which molecules
+    are kept. The natural next question is a different one: whether that preference survives into the
+    molecules the generator produces <em>later</em>, once the two runs have been training on different
+    corpora for several blocks.</p>
+
+    <p>Across blocks 2–9 the <b>mean</b> contrast in the <b>worst scored-antitarget z</b> of the
+    unconditioned monitor samples is <strong>−0.124 z</strong>, in the expected direction. Correcting for the <strong>−0.025 z</strong> prepared-state reporting offset
+    measured in block 1, before the runs diverged, leaves <strong>−0.099 z</strong>. The
+    block-to-block variability along a single trajectory is <strong>± 0.102 z</strong>.</p>
+
+    <figure class="figure reveal">
+      <p class="figure__lead">The corrected contrast, set against the resolution of the measurement
+      that has to detect it.</p>
+      <div class="figure__plate">
+        <svg viewBox="0 0 260 112" role="img"
+             aria-label="The corrected run-to-run contrast of −0.099 z falls inside the plus or minus
+                         0.102 z band of ordinary block-to-block variation measured along a single
+                         trajectory; the uncorrected −0.124 z falls just outside it.">
+          <rect x="36.2" y="22" width="137.7" height="62" fill="var(--panel)"
+                stroke="var(--rule)" stroke-dasharray="3 3"/>
+          <path d="M105 18 V88" stroke="var(--faint)" stroke-width="1" stroke-dasharray="2 3"/>
+          <text x="105" y="14" text-anchor="middle" font-size="9" fill="var(--faint)">0</text>
+
+          <text x="107" y="30" font-size="9" fill="var(--ink)">−0.124 z
+            raw contrast</text>
+          <rect class="bar-grow" style="--i:0" x="105" y="34" width="83.7" height="11"
+                fill="var(--faint)"/>
+
+          <path d="M171.8 50 H188.7 M171.8 47 V53 M188.7 47 V53" stroke="var(--muted)"
+                stroke-width="0.8" fill="none"/>
+          <text x="180" y="46" text-anchor="middle" font-size="8" fill="var(--muted)">0.025</text>
+
+          <text x="107" y="62" font-size="9" fill="var(--guided-dk)">−0.099 z
+            corrected</text>
+          <rect class="bar-grow" style="--i:1" x="105" y="66" width="66.8" height="11"
+                fill="var(--guided)"/>
+
+          <text x="24" y="100" font-size="9" fill="var(--muted)">shaded:
+            ± 0.102 z variation within one run</text>
+        </svg>
+      </div>
+      <figcaption><b>Signal against resolution.</b> The corrected contrast sits inside the band of
+      variation already present along a single completed trajectory, and the uncorrected one sits just
+      outside it. With one trajectory per condition, that is as far as this experiment can
+      resolve.</figcaption>
+    </figure>
+
+    <p><strong>The corrected signal is about the same size as the variation already present within one
+    run.</strong> With one stochastic trajectory per condition, between-run variability cannot be
+    estimated at all, so the honest statement is that the experiment does not resolve the question,
+    not that the answer is negative.</p>
+
+    <div class="callout callout--caution">
+      <strong class="callout__title">Why more blocks would not fix this</strong>
+      <p>Blocks 2–9 are successive states of one stochastic process, not independent replicates. An
+      early difference in generated or selected chemistry changes the corpus from which all later
+      models are fitted, so the trajectory is path-dependent. The ± 0.102 z figure is an empirical
+      measure of variation <em>along</em> a completed trajectory, not a standard error, not a
+      confidence interval, and dividing it by √8 would not be meaningful.</p>
+      <p><strong>Only independent runs from different random seeds can separate a reproducible
+      β<sub>AT</sub> effect from ordinary trajectory-to-trajectory variation.</strong> That is a
+      defined, affordable next experiment, and it is the first item under next steps.</p>
+    </div>
+
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">See the numbers<span class="visually-hidden">: how far the preference reaches</span></summary>
+      <div class="disclosure__body">
+        <figure class="figure reveal">
+          <p class="figure__lead">The per-block monitor contrast, and the whole-run contrast placed
+          against the measurement's resolution.</p>
+          <div class="figure__plate">
+            <img src="figures/fig_results_h3_transmission_v2.svg" loading="lazy" decoding="async"
+                 width="548" height="420"
+                 alt="Panel A shows the worst scored-antitarget z of the unconditioned monitor sample for
+                      each outer block, with the two arms overlapping heavily from block 2 onward; panel B
+                      places the whole-run contrast against the resolution of the measurement: a raw
+                      contrast of −0.124 z, a −0.025 z prepared-state reporting offset measured in block 1
+                      before the runs diverged, and a corrected −0.099 z that falls inside the ±0.102 z
+                      shaded band of ordinary block-to-block variation along a single trajectory, so the
+                      selection-level preference is not resolved as persisting into later generation.">
+          </div>
+          <p><button class="btn btn--quiet" type="button" data-lightbox="lb-transmission">Enlarge this
+          figure</button></p>
+          <figcaption><b>Downstream transmission.</b> (A) unconditioned monitor sample per
+          block; (B) the run contrast against the block-to-block resolution. The annotated values are
+          small on a phone: they are −0.124 z raw, −0.025 z offset, −0.099 z corrected, against a
+          ± 0.102 z band.</figcaption>
+        </figure>
+
+
+        <ul>
+          <li><strong>Direction, and the estimator it depends on.</strong> The headline
+            −0.124 / −0.099 z is a <em>mean</em>, and the contrast is sensitive to that choice: the
+            mean carries the expected sign in 8 of 8 blocks, the median in only 6 of 8
+            (P = 0.29, two-sided sign test). Consistent with a real but small effect, and equally
+            consistent with drift.</li>
+          <li><strong>Attenuation has a plausible mechanism, not identifiable here.</strong> The corpus
+            grows cumulatively, so the molecules contributed by any one selection block become a
+            progressively smaller fraction of later training populations. That is consistent with what
+            is observed; it is not demonstrated by it.</li>
+        </ul>
+
+        <h4>Extreme-tail generation</h4>
+        <p>In the unconditioned monitor sample over blocks 2–9 (3,989 against 3,990 records), the
+        first two thresholds do not resolve a difference: at ≤ −9.0, 4.26 % against 4.91 %,
+        RR 1.15 [0.94, 1.41]; at ≤ −9.5, 1.30 % against 1.70 %, RR 1.31 [0.91, 1.87]. The apparent
+        separation at ≤ −10.0 (RR 3.12 [1.14, 8.58], a <b>block-clustered</b> interval, not a Katz
+        one: the 7,979 monitor records are clustered in eight outer blocks and one block supplies
+        10 of the 25 AT-ablated events) rests on <strong>33 events in total</strong>, 8 AT-guided
+        against 25 AT-ablated. Removing that single block gives <b>RR 1.87 [0.80, 4.41]</b>. The
+        effect does not survive removal of one block. <strong>Not a result.</strong></p>
+        <p class="note">These intervals describe uncertainty <em>within</em> the observed monitor
+        samples. They do not estimate variability across independent ALGen runs: only one complete
+        trajectory exists per condition.</p>
+
+        <h4>Why best-score comparisons are not evidence</h4>
+        <p>For N independent draws, P(min<sub>i</sub> X<sub>i</sub> ≤ x) = 1 − [1 − F(x)]<sup>N</sup>,
+        so larger pools produce more extreme minima even when the underlying distribution is
+        unchanged. Equal-budget resampling places the ≈ 0.14 difference between the two best observed
+        CDK2 scores squarely within matched-budget variation.</p>
+
+        <h4>Generation attrition, blocks 2–9</h4>
+        <p>259,965 AT-guided and 268,591 AT-ablated molecules entered the <em>reconstructed</em>
+        pipeline, reconstructed because one intermediate subsetting step, between the saved
+        threshold-survivor files and the saved docking outputs, was not preserved and so is not
+        quantified. The percentages below are therefore a near-complete, not a complete, accounting. The
+        QED and SA filters removed 54.40 % against 50.29 %; Tanimoto 1.08 % against 1.77 %; MW 2.26 %
+        against 3.07 %; survivors 42.26 % against 44.87 %. Similarity to the fixed initial corpus
+        shows no detectable blockwise increase (Theil–Sen slope −0.0008 [−0.0028, +0.0006] and
+        −0.0014 [−0.0048, +0.0004]), and exact molecular recurrence stays below 0.02 %. The
+        generator is not collapsing onto its starting chemistry in either arm.</p>
+
+      </div>
+    </details>
+
+    <p><a class="jump" href="#limits">What would settle this, and the other limits ↓</a></p>
+
+  </div>
+
+  <!-- Lightboxes for this section. Each <img> carries data-src, not src: the heavy file is
+       fetched on first open only. -->
+
+  <dialog class="lightbox" id="lb-decile" aria-label="Reward-decile response, all nine receptors">
+    <div class="lightbox__bar">
+      <span class="lightbox__title">Reward-decile response, 9 receptors</span>
+      <button class="lightbox__close" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="lightbox__stage">
+      <img data-src="figures/fig_reward_decile.svg" width="486" height="409"
+           alt="Nine panels, one per receptor, of median receptor-normalised z against within-run
+                reward decile: under antitarget guidance a higher reward means stronger predicted CDK2
+                binding together with weaker predicted binding at all three scored receptors, whereas
+                with the antitarget term removed a higher reward means broadly stronger predicted
+                binding everywhere. In this figure blue is AT-guided and orange is AT-ablated.">
+    </div>
+  </dialog>
+
+  <dialog class="lightbox" id="lb-tail" aria-label="Two-panel Pareto landscape, scored and held-out">
+    <div class="lightbox__bar">
+      <span class="lightbox__title">Pareto landscape: scored and held-out panels</span>
+      <button class="lightbox__close" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="lightbox__stage">
+      <img data-src="figures/figS_tail_pareto_landscape_v3.svg" width="491" height="312"
+           alt="Two-panel Pareto landscape over all selected molecules: non-dominated frontiers for
+                the AT-guided run (teal circles) and the AT-ablated run (red squares) against CDK2
+                docking score, for the scored antitarget panel (A) and the held-out panel (B); inside
+                the shaded strong-CDK2 tail at s_CDK2 ≤ −9.5 the AT-guided frontier holds larger
+                predicted margins in both panels; labelled candidates 5_1562 at a CDK2 score of
+                −11.78 with M_scored 3.52 and 7_2710 at −10.17 with margin 4.19, while the single
+                largest ablated margin sits outside the tail at weaker predicted potency, so the
+                guided advantage is earned among molecules that are already strong predicted CDK2
+                binders rather than by giving predicted potency up.">
+    </div>
+  </dialog>
+
+  <dialog class="lightbox" id="lb-transmission" aria-label="Downstream transmission, both panels">
+    <div class="lightbox__bar">
+      <span class="lightbox__title">Downstream transmission, blocks 2–9</span>
+      <button class="lightbox__close" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="lightbox__stage">
+      <img data-src="figures/fig_results_h3_transmission_v2.svg" width="548" height="420"
+           alt="Panel A shows the worst scored-antitarget z of the unconditioned monitor sample for
+                each outer block, with the two arms overlapping heavily from block 2 onward; panel B
+                places the whole-run contrast of −0.124 z raw, −0.025 z offset and −0.099 z corrected
+                against the ±0.102 z band of ordinary block-to-block variation along a single
+                trajectory.">
+    </div>
+  </dialog>
+
+</section>
+
+<!-- ================= 06-limits ================= -->
+<section class="section" id="limits" aria-labelledby="limits-h">
+  <div class="col">
+
+    <p class="section-eyebrow">What it does not show</p>
+    <h2 class="section-title" id="limits-h">
+      <span class="section-title__mark" aria-hidden="true">🧭</span>
+      Limits and next steps
+    </h2>
+
+    <p class="lede">Every limit below is already stated where it arises. They are gathered here so the
+    boundary of the claim can be read in one place, each one paired with the experiment that would
+    settle it.</p>
+
+    <p>The right-hand column is the “next steps” of the title. It is not a wish list: each entry is
+    the specific measurement or control that would remove that particular limit.</p>
+
+    <div class="table-scroll">
+      <table class="table table--pairs" role="table">
+        <caption>The four that bound the claim most. Four more are listed below.</caption>
+        <thead role="rowgroup">
+          <tr role="row"><th role="columnheader" scope="col">Limitation</th><th role="columnheader" scope="col">What would settle it</th></tr>
+        </thead>
+        <tbody role="rowgroup">
+          <tr role="row">
+            <td role="cell" data-label="Limitation">Glide defines <b>both</b> the selection pressure and the
+              primary evaluation signal, so the improvement is not independent of the model that
+              produced it</td>
+            <td role="cell" data-label="What would settle it">Orthogonal energetic rescoring, then biochemical
+              assays</td>
+          </tr>
+          <tr role="row">
+            <td role="cell" data-label="Limitation">One stochastic trajectory per condition; downstream
+              propagation unresolved</td>
+            <td role="cell" data-label="What would settle it">Independent runs from different random seeds</td>
+          </tr>
+          <tr role="row">
+            <td role="cell" data-label="Limitation">Both arms receive informative feedback, so the experiment does
+              not isolate feedback vs no feedback</td>
+            <td role="cell" data-label="What would settle it">Frozen-generator, random-feedback and
+              shuffled-feedback controls, replicated</td>
+          </tr>
+          <tr role="row">
+            <td role="cell" data-label="Limitation">S1 selectivity labels rest on <b>one</b> decisively measured
+              antitarget for 102 of 111 compounds</td>
+            <td role="cell" data-label="What would settle it">Broader kinome profiling of the reference set</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">Glide is the docking program that produced every score on this site. S1 is the
+    reference set of 111 compounds measured to be both CDK2-active and selective, defined under
+    <a href="#reference-chemistry">the reference chemistry</a>. A
+    <i>stochastic trajectory</i> is one complete run of the generative loop: because each run reshapes
+    the corpus it later trains on, no two runs follow the same path.</p>
+
+    <details class="disclosure disclosure--caution">
+      <summary class="disclosure__summary">What this does not show<span class="visually-hidden">: four further limitations</span></summary>
+      <div class="disclosure__body">
+        <p>Four further limitations, each with what would settle it.</p>
+        <div class="table-scroll">
+          <table class="table table--pairs" role="table">
+            <thead role="rowgroup">
+              <tr role="row"><th role="columnheader" scope="col">Limitation</th><th role="columnheader" scope="col">What would settle it</th></tr>
+            </thead>
+            <tbody role="rowgroup">
+              <tr role="row">
+                <td role="cell" data-label="Limitation">Receptor panel is coarse-grained: retained structures
+                  capture experimentally accessible geometries, not their physiological
+                  populations</td>
+                <td role="cell" data-label="What would settle it">Ensemble- or MD-informed receptor weighting</td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="Limitation">Closely related kinases leave only subtle differences for
+                  an empirical scoring function; the three scored receptors are the more
+                  sequence-distant of the panel</td>
+                <td role="cell" data-label="What would settle it">Better scoring, or explicit induced-fit
+                  treatment</td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="Limitation">Selection concentrates the population into fewer scaffold
+                  families than random selection</td>
+                <td role="cell" data-label="What would settle it">Diversity-aware selection terms</td>
+              </tr>
+              <tr role="row">
+                <td role="cell" data-label="Limitation">Calibration and benchmark used the same reference panel,
+                  so benchmark performance is not independent validation of the deployed
+                  parameters</td>
+                <td role="cell" data-label="What would settle it">An untouched external reference set</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <div class="callout">
+      <strong class="callout__title">Where this leaves the claim</strong>
+      <p>None of these are fatal to the claim actually made, that antitarget-aware docking feedback
+      causally changes molecular selection. All of them bound how far that claim can be extended.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 07-about ================= -->
+<section class="section" id="about" aria-labelledby="about-h">
+  <div class="col">
+
+    <p class="section-eyebrow">Who and where</p>
+    <h2 class="section-title" id="about-h">
+      <span class="section-title__mark" aria-hidden="true">👤</span>
+      About and resources
+    </h2>
+
+    <p class="lede">Who did this, and where everything lives.</p>
+
+
+    <!-- ===== 7.1 About the author ================================================ -->
+
+    <div class="card reveal">
+      <div>
+        <h3 class="card__name">Vanja Marković</h3>
+        <p class="card__tagline">Physical chemistry · pharmacy · complex-systems physics</p>
+      </div>
+
+      <p>I came to computational drug design from physical chemistry, and have been studying pharmacy
+      alongside it ever since. The MSc in Physics of Complex Systems and Biophysics at the Universitat
+      de Barcelona, of which this project is the thesis, is where those two met. What interests me
+      is how far physics actually explains the world, and drug discovery is where that question stops
+      being abstract.</p>
+
+      <p><strong>I am looking for a PhD position</strong> in computational drug design, structural
+      bioinformatics, or machine learning for molecular discovery. I am drawn to problems where a
+      physics-based model and a learned model have to be made to agree, and where the honest answer
+      requires building the measurement before running the experiment.</p>
+
+      <div class="chips">
+        <span class="chip chip--capability">structural bioinformatics</span>
+        <span class="chip chip--capability">molecular docking</span>
+        <span class="chip chip--capability">cheminformatics</span>
+        <span class="chip chip--capability">generative models</span>
+        <span class="chip chip--capability">scaffold-disjoint validation</span>
+        <span class="chip chip--capability">HPC engineering</span>
+      </div>
+
+      <div class="btn-row">
+        <a class="btn btn--primary" href="https://www.linkedin.com/in/vanja-markovi%C4%87-507b88348/">
+          Connect on LinkedIn</a>
+        <a class="btn btn--ghost" href="mailto:markovic.vanja321@gmail.com">markovic.vanja321@gmail.com</a>
+      </div>
+    </div>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">More about this work and background</summary>
+      <div class="disclosure__body">
+        <p>Before anything could be optimised, the off-target signal had to be shown to exist: ten
+        kinases chosen from measured cross-activity, a thousand crystal structures reduced to twelve
+        production docking grids, ten kinases enrichment-validated against measured actives and
+        inactives, and a separate test on chemistry held out from the fit to decide which of those
+        receptors carried information that was genuinely <em>useful</em> rather than merely reliable.
+        One of the ten failed the reliability test outright; a second passed it but added nothing
+        useful. The generative experiment itself was one
+        coefficient.</p>
+
+        <p>BSc Physical Chemistry, University of Belgrade · integrated studies in Pharmacy, University
+        of Belgrade (ongoing) · MSc Physics of Complex Systems and Biophysics, Universitat de
+        Barcelona. This thesis was carried out in the Electronic and Atomic Protein Modelling group at
+        the Barcelona Supercomputing Center, supervised by Víctor Guallar.</p>
+      </div>
+    </details>
+
+
+
+    <h3 id="about-resources">Resources</h3>
+
+    <h4>This work</h4>
+    <ul class="linklist">
+      <li>
+        <a href="poster.pdf">Conference poster<span class="linklist__src">PDF</span></a>
+        <span class="linklist__note">The printed poster this page was scanned from. 3rd Biology for
+        Physics Conference, Barcelona, 2026.</span>
+      </li>
+      <li>
+        <a href="mailto:markovic.vanja321@gmail.com?subject=Thesis%20request%3A%20CDK2%20selectivity">Full thesis, MSc, Universitat de Barcelona / BSC, 2026<span class="linklist__src">On request</span></a>
+        <span class="linklist__note"><i>Physics-Guided Generative Molecular Design for CDK2
+        Selectivity.</i> Email the author for a copy.</span>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/vanja-markovi%C4%87-507b88348/">linkedin.com/in/vanja-marković<span class="linklist__src">LinkedIn</span></a>
+      </li>
+    </ul>
+
+    <h4>Built on</h4>
+    <ul class="linklist">
+      <li>
+        <a href="https://github.com/IFilella/ALGen-1">ALGen implementation<span class="linklist__src">GitHub</span></a>
+        <span class="linklist__note">The implementation used in this work, and the reference for how
+        the generative model actually behaves. For the framework itself and its earlier CDK2 and
+        multi-target applications, see Filella-Merce I. <i>et al.</i>, “Optimizing drug design by
+        merging generative AI with a physics-based active learning framework”,
+        <i>Communications Chemistry</i> <b>8</b>, 238 (2025).</span>
+      </li>
+      <li>
+        <a href="https://arxiv.org/abs/2506.15309">Multi-target extension<span class="linklist__src">arXiv</span></a>
+        <span class="linklist__note">Vilalta-Mor J., Molina A., Ortega Varga L., Filella-Merce I.,
+        Guallar V., “Active learning-guided seq2seq variational autoencoder for multi-target inhibitor
+        generation”, <i>ICML 2025 Workshop on Generative AI for Biology</i>, PMLR <b>267</b> (2025). arXiv:2506.15309.
+        Multi-target affinity: a different problem from selectivity.</span>
+      </li>
+      <li>
+        <a href="https://www.ebi.ac.uk/chembl/">ChEMBL<span class="linklist__src">Database</span></a>
+        <span class="linklist__note">Release 37. Source of every measured activity used to build the
+        antitarget panel and the reference chemistry.</span>
+      </li>
+      <li>
+        <a href="https://klifs.net/">KLIFS<span class="linklist__src">Database</span></a>
+        <span class="linklist__note">Kinase pocket annotation and the 85-position pocket numbering.
+        Kooistra A.J. <i>et al.</i>, <i>Nucleic Acids Res.</i> <b>44</b>, D365 (2016).</span>
+      </li>
+      <li>
+        <a href="https://www.rcsb.org/">RCSB PDB<span class="linklist__src">Database</span></a>
+        <span class="linklist__note">Source of the 1,005 crystal structures behind the receptor
+        panel.</span>
+      </li>
+      <li>
+        <a href="https://www.schrodinger.com/">Glide / Schrödinger<span class="linklist__src">Software</span></a>
+        <span class="linklist__note">Docking and scoring, and structure preparation. Friesner R.A.
+        <i>et al.</i>, <i>J. Med. Chem.</i> <b>47</b>, 1739 (2004).</span>
+      </li>
+      <li>
+        <a href="https://www.rdkit.org/">RDKit<span class="linklist__src">Software</span></a>
+        <span class="linklist__note">Standardisation, descriptors, fingerprints and Bemis–Murcko
+        scaffolds.</span>
+      </li>
+    </ul>
+    <p class="small">Also used: Clustal Omega, Gemmi, scikit-learn, SciPy.</p>
+
+    <h4>Institutions</h4>
+    <ul class="linklist">
+      <li><a href="https://www.bsc.es/">Barcelona Supercomputing Center<span class="linklist__src">bsc.es</span></a></li>
+      <li><a href="https://www.ub.edu/">Universitat de Barcelona<span class="linklist__src">ub.edu</span></a></li>
+    </ul>
+
+    <p class="small">Computational resources provided by the Electronic and Atomic Protein Modelling
+    group at the Barcelona Supercomputing Center.</p>
+
+
+    <!-- ===== 7.4 Cite this work ================================================== -->
+
+    <h3 id="about-cite">Cite this work</h3>
+
+    <p class="citation">Marković V., Vilalta-Mor J., Basten V., Guallar V. <i>Physics-Guided
+    Generative Design for CDK2 Selectivity: Antitarget-Aware Docking Feedback in ALGen.</i> 3rd
+    Biology for Physics Conference, Barcelona, 2026. Poster.</p>
+
+    <p class="citation">Marković V. <i>Physics-Guided Generative Molecular Design for CDK2
+    Selectivity.</i> MSc thesis, Universitat de Barcelona / Barcelona Supercomputing Center,
+    2026.</p>
+
+    <details class="disclosure">
+      <summary class="disclosure__summary">BibTeX</summary>
+      <div class="disclosure__body">
+        <pre id="bibtex" tabindex="0" role="group" aria-label="BibTeX entries"><code>@inproceedings{markovic2026cdk2poster,
+  author    = {Markovi{\'c}, Vanja and Vilalta-Mor, J{\'u}lia and
+               Basten, Violeta and Guallar, V{\'i}ctor},
+  title     = {Physics-Guided Generative Design for {CDK2} Selectivity:
+               Antitarget-Aware Docking Feedback in {ALGen}},
+  booktitle = {3rd Biology for Physics Conference},
+  address   = {Barcelona, Spain},
+  year      = {2026},
+  note      = {Poster}
+}
+
+@mastersthesis{markovic2026cdk2thesis,
+  author  = {Markovi{\'c}, Vanja},
+  title   = {Physics-Guided Generative Molecular Design for {CDK2} Selectivity},
+  school  = {Universitat de Barcelona},
+  year    = {2026},
+  note    = {MSc Physics of Complex Systems and Biophysics.
+             Work carried out at the Barcelona Supercomputing Center}
+}</code></pre>
+        <button class="btn btn--quiet" type="button" data-copy="#bibtex">Copy BibTeX</button>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+  </main>
+
+</div>
+
+<nav class="bottombar" aria-label="Quick links">
+  <div class="bottombar__inner">
+    <button class="bottombar__btn" type="button" data-open-contents
+            aria-haspopup="dialog" aria-controls="contents">
+      <span class="bottombar__icon" aria-hidden="true">☰</span>Contents</button>
+    <a class="bottombar__btn" href="#overview">
+      <span class="bottombar__icon" aria-hidden="true">↑</span>Top</a>
+    <a class="bottombar__btn bottombar__btn--primary"
+       href="https://www.linkedin.com/in/vanja-markovi%C4%87-507b88348/">LinkedIn</a>
+  </div>
+</nav>
+
+<dialog class="sheet" id="contents" aria-labelledby="contents-title">
+  <div class="sheet__head">
+    <h2 class="sheet__title" id="contents-title">Contents</h2>
+    <button class="sheet__close" type="button" aria-label="Close">✕</button>
+  </div>
+  <ul class="sheet__list">
+    <li><a class="sheet__link" href="#overview"><span class="sheet__num">1</span>Overview</a></li>
+
+    <li><a class="sheet__link" href="#signal"><span class="sheet__num">2</span>Building the selectivity signal</a>
+      <ul class="sheet__sub">
+        <li><a class="sheet__sublink" href="#why-hard">Why CDK2 selectivity is hard</a></li>
+        <li><a class="sheet__sublink" href="#antitargets">Choosing the ten antitargets</a></li>
+        <li><a class="sheet__sublink" href="#reference-chemistry">The reference chemistry</a></li>
+        <li><a class="sheet__sublink" href="#structures-grids">Structures to docking grids</a></li>
+        <li><a class="sheet__sublink" href="#reliable-useful">Reliable &ne; useful</a></li>
+        <li><a class="sheet__sublink" href="#one-scale">One common scale</a></li>
+      </ul>
+    </li>
+
+    <li><a class="sheet__link" href="#selection"><span class="sheet__num">3</span>How selection works</a>
+      <ul class="sheet__sub">
+        <li><a class="sheet__sublink" href="#algen-loop">The ALGen loop</a></li>
+        <li><a class="sheet__sublink" href="#score-j">What the score rewards</a></li>
+        <li><a class="sheet__sublink" href="#cdk2-gate">The CDK2 gate</a></li>
+      </ul>
+    </li>
+
+    <li><a class="sheet__link" href="#experiment"><span class="sheet__num">4</span>The experiment</a>
+      <ul class="sheet__sub">
+        <li><a class="sheet__sublink" href="#two-runs">Two runs, one difference</a></li>
+        <li><a class="sheet__sublink" href="#four-populations">The four populations</a></li>
+        <li><a class="sheet__sublink" href="#block-one">Why block 1 is the comparison</a></li>
+      </ul>
+    </li>
+
+    <li><a class="sheet__link" href="#results"><span class="sheet__num">5</span>Results</a>
+      <ul class="sheet__sub">
+        <li><a class="sheet__sublink" href="#results-ablation">Selection changes</a></li>
+        <li><a class="sheet__sublink" href="#results-within-pool">Inside each pool</a></li>
+        <li><a class="sheet__sublink" href="#results-tradeoff">The potency&ndash;selectivity trade-off</a></li>
+        <li><a class="sheet__sublink" href="#results-downstream">How far the preference reaches</a></li>
+      </ul>
+    </li>
+
+    <li><a class="sheet__link" href="#limits"><span class="sheet__num">6</span>Limits and next steps</a></li>
+
+    <li><a class="sheet__link" href="#about"><span class="sheet__num">7</span>About and resources</a>
+      <ul class="sheet__sub">
+        <li><a class="sheet__sublink" href="#about-resources">Resources</a></li>
+        <li><a class="sheet__sublink" href="#about-cite">Cite this work</a></li>
+      </ul>
+    </li>
+  </ul>
+</dialog>
+
+<script>
+/* Every behaviour here is an enhancement. With JS off the page is complete: <details> is native,
+   the sheet's links are the same anchors as the sidebar's, and nothing is ever hidden. */
+(function () {
+  var $ = function (sel, ctx) { return (ctx || document).querySelectorAll(sel); };
+
+  /* Contents sheet: native <dialog> gives backdrop, Escape, focus trap and focus return. */
+  var sheet = document.getElementById('contents');
+  if (sheet && sheet.showModal) {
+    $('[data-open-contents]').forEach(function (b) {
+      b.addEventListener('click', function () { sheet.showModal(); });
+    });
+    $('.sheet__close, .sheet__link, .sheet__sublink', sheet).forEach(function (el) {
+      el.addEventListener('click', function () { sheet.close(); });
+    });
+    sheet.addEventListener('click', function (e) { if (e.target === sheet) sheet.close(); });
+  }
+
+  /* Lightboxes: the heavy figure's src is swapped in on first open only. */
+  $('[data-lightbox]').forEach(function (btn) {
+    var d = document.getElementById(btn.getAttribute('data-lightbox'));
+    if (!d || !d.showModal) return;
+    btn.addEventListener('click', function () {
+      $('img[data-src]', d).forEach(function (i) { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+      d.showModal();
+    });
+    d.addEventListener('click', function (e) {
+      if (e.target === d || e.target.closest('.lightbox__close')) d.close();
+    });
+  });
+
+  /* Deferred figures inside accordions (plan §5: load on accordion open). */
+  $('details').forEach(function (d) {
+    d.addEventListener('toggle', function () {
+      if (!d.open) return;
+      $('img[data-src]', d).forEach(function (i) { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+    });
+  });
+
+  /* Expand all / collapse all, scoped to its own section, never the whole page. */
+  $('[data-expand-all], [data-collapse-all]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var open = btn.hasAttribute('data-expand-all');
+      $('details.disclosure', btn.closest('.section')).forEach(function (d) { d.open = open; });
+    });
+  });
+
+  /* Copy BibTeX. */
+  $('[data-copy]').forEach(function (btn) {
+    var label = btn.textContent;
+    btn.addEventListener('click', function () {
+      var src = document.querySelector(btn.dataset.copy);
+      if (!src || !navigator.clipboard) return;
+      navigator.clipboard.writeText(src.textContent.trim()).then(function () {
+        btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = label; }, 2000);
+      });
+    });
+  });
+
+  /* Reveal on scroll (components.md §12). The CSS is inside prefers-reduced-motion: no-preference. */
+  if (!('IntersectionObserver' in window)) {
+    /* No observer, no reveal: show everything rather than hide it forever. */
+    $('.reveal').forEach(function (el) { el.classList.add('is-visible'); });
+  } else {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    $('.reveal').forEach(function (el) { io.observe(el); });
+
+    /* Scroll-spy for the desktop sidebar. */
+    var links = {}, seen = {};
+    $('.sidebar__link').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+    var spy = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { seen[e.target.id] = e.isIntersecting; });
+      var cur = Object.keys(links).filter(function (id) { return seen[id]; })[0];
+      Object.keys(links).forEach(function (id) {
+        if (id === cur) links[id].setAttribute('aria-current', 'true');
+        else links[id].removeAttribute('aria-current');
+      });
+    }, { rootMargin: '-15% 0px -70% 0px' });
+    Object.keys(links).forEach(function (id) {
+      var s = document.getElementById(id); if (s) spy.observe(s);
+    });
+  }
+
+  /* A target inside a closed <details> is unreachable by link. Open its ancestors,
+     then re-apply the hash so the browser scrolls to it. Covers the Contents sheet,
+     the in-page cross-references, and a deep link pasted from outside. */
+  function openAncestors(hash) {
+    var el = hash && document.getElementById(hash.slice(1));
+    if (!el) return;
+    var opened = false;
+    for (var d = el.closest('details'); d; d = d.parentElement.closest('details')) {
+      if (!d.open) { d.open = true; opened = true; }
+    }
+    if (!opened) return;
+    /* Opening a <details> reflows everything below it, so the browser's own jump landed
+       at the pre-open offset. Re-aim on the next frame, and instantly: a smooth scroll
+       across 20,000px is aborted by the engine. */
+    requestAnimationFrame(function () { el.scrollIntoView({ behavior: 'instant', block: 'start' }); });
+  }
+  window.addEventListener('hashchange', function () { openAncestors(location.hash); });
+  if (location.hash) window.addEventListener('load', function () { openAncestors(location.hash); });
+
+  /* Non-Chromium engines do not print closed <details> open by themselves. */
+  window.addEventListener('beforeprint', function () {
+    $('details').forEach(function (d) { d.open = true; });
+  });
+}());
+</script>
+
+</body>
+</html>

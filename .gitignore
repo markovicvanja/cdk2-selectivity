@@ -1,0 +1,9 @@
+# Publish root. Everything tracked here is served as-is by a folder deploy
+# (rsync, Netlify drop, GitHub Pages), so the build scaffolding must not ship:
+# /_build/05-results.html would otherwise be a live, unstyled public URL.
+_build/
+.DS_Store
+
+# The full thesis is deliberately not published. Resources offers it on request
+# via email instead. Kept here so a stray copy can never be committed.
+thesis.pdf

@@ -1,0 +1,1456 @@
+/* =============================================================================
+   Physics-Guided Generative Design for CDK2 Selectivity, companion site
+   Single stylesheet. No build step, no framework, no external requests.
+
+   Implements site_plan.md §4 (navigation), §5 (figures), §6 (visual design),
+   §7 (accessibility), §8 (performance budget).
+
+   Reading order of this file:
+     1  Tokens
+     2  Reset and base
+     3  Layout: skip link, shell, sidebar, sections, content column
+     4  Typography
+     5  Hero
+     6  Buttons
+     7  Stat cards
+     8  Disclosure (<details>)
+     9  Figures, scroll regions, lightbox
+    10  Callouts
+    11  Chips and the capability grid
+    12  Tables
+    13  Cards, link lists, citations
+    14  Sticky bottom bar and the Contents sheet
+    15  Desktop (>= 900px)
+    16  Animation utilities
+    17  Print
+
+   No dark mode in v1. site_plan.md §7: the generated matplotlib SVGs are
+   external <img> with hard-coded near-black strokes, so they cannot follow a
+   page theme. A half-done dark mode is worse than none. Every colour below is
+   therefore a single light-theme value.
+   ============================================================================= */
+
+
+/* -----------------------------------------------------------------------------
+   1  TOKENS
+   Every builder uses these. Do not hard-code a hex value in a section.
+   -------------------------------------------------------------------------- */
+
+:root {
+
+  /* --- Neutral ramp ------------------------------------------------------ */
+  --ink:        #16212E;   /* headings, stat numerals, emphatic body        */
+  --body:       #31404F;   /* body text                          10.6:1 ✓  */
+  --muted:      #5E6A73;   /* captions, sub-lines                 5.6:1 ✓  */
+  --faint:      #6B7683;   /* footnotes, axis labels              4.6:1 ✓  */
+                           /* NOTE: plan §7 flagged #8A939E as 3.4:1, it is
+                              NOT in this file. --faint is the darkened,
+                              accessible replacement. Use --muted rather than
+                              --faint on --panel grounds (4.2:1 there).     */
+  --rule:       #D9DEE1;   /* hairlines                                     */
+  --panel:      #F4F7F9;   /* neutral panel fill                            */
+  --bg:         #FFFFFF;   /* page                                          */
+
+  /* --- Semantic hues -----------------------------------------------------
+     Colour is semantic and is never reused for decoration. Blue is always
+     CDK2/target. Teal is always AT-guided / the benefit. Terracotta is always
+     AT-ablated / the cost. Colour is never the only encoding: every coloured
+     element also carries a text label, a mark, or a shape.
+     The *-dk variants exist only so text stays >= 4.5:1; the fill colours
+     are the poster's exact values.                                        */
+  --target:     #2E6DB4;   /* CDK2 / target            white text 5.3:1 ✓  */
+  --target-bg:  #EDF3FA;
+  --guided:     #17857A;   /* AT-guided / benefit: FILLS AND RULES ONLY    */
+  --guided-dk:  #0F6E64;   /* teal TEXT, and filled chips     6.1:1 ✓      */
+  --guided-bg:  #E9F4F2;
+  --ablated:    #C9663C;   /* AT-ablated / cost: FILLS AND RULES ONLY      */
+  --ablated-dk: #A9502C;   /* terracotta TEXT, and filled chips 5.4:1 ✓    */
+  --ablated-bg: #FBF0EA;
+  --held:       #4E9A91;   /* held-out receptors (light teal, fills only)
+                              3.30:1 on --bg, 3.07:1 on --panel: clears the
+                              WCAG 1.4.11 3:1 floor for meaningful graphics. */
+
+  /* --- Type --------------------------------------------------------------
+     System stack: 0 KB of webfont on a conference QR page (plan §6, §8).
+     Sizes are rem so a reader's browser font-size setting is respected;
+     px equivalents at a 16px root are given in the comments and match the
+     plan's table exactly.                                                 */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter,
+          Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --fs-hero:  1.875rem;   /* 30px mobile → 44px desktop */
+  --fs-h2:    1.5rem;     /* 24px        → 30px         */
+  --fs-h3:    1.125rem;   /* 18px        → 20px         */
+  --fs-lede:  1.1875rem;  /* 19px, the hero claim      */
+  --fs-body:  1.0625rem;  /* 17px, read at arm's length */
+  --fs-small: 0.875rem;   /* 14px                       */
+  --fs-stat:  2.5rem;     /* 40px        → 52px         */
+  --fs-mono:  0.9375rem;  /* 15px                       */
+
+  --lh-body: 1.6;
+  --lh-head: 1.25;
+
+  /* --- Spacing: 8px base scale (plan §6) --------------------------------- */
+  --sp-1: 0.5rem;    /*  8 */
+  --sp-2: 1rem;      /* 16 */
+  --sp-3: 1.5rem;    /* 24 */
+  --sp-4: 2rem;      /* 32 */
+  --sp-5: 3rem;      /* 48 */
+  --sp-6: 4rem;      /* 64 */
+  --sp-section: var(--sp-5);   /* 48 mobile, 80 desktop (set in §15) */
+
+  /* --- Measure and widths ------------------------------------------------ */
+  --measure: 68ch;    /* content column cap (plan §4)          */
+  --wide: 1100px;     /* figures may break out to this (plan §4) */
+  --gutter: max(1.25rem, env(safe-area-inset-left, 0px));
+                      /* page edge inset, mobile. viewport-fit=cover means the
+                         sensor housing overlaps the gutter in landscape.     */
+  --sidebar-w: 180px; /* plan §4: 180, not 220                  */
+  --bar-h: 61px;      /* 1 border + 6 + --tap + 6, excl. safe area */
+
+  /* --- Shape ------------------------------------------------------------- */
+  --radius: 8px;
+  --radius-lg: 14px;
+  --rule-accent: 3px;  /* the left rules on callouts and disclosures */
+  --tap: 48px;         /* minimum tap target (plan §7)              */
+}
+
+
+/* -----------------------------------------------------------------------------
+   2  RESET AND BASE
+   Minimal. Not a reset library, just the handful of defaults that hurt.
+   -------------------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: auto;             /* smooth is opted into in §16 only */
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--body);
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  text-rendering: optimizeLegibility;
+  /* Keep content clear of the sticky bottom bar and the home indicator. */
+  padding-bottom: calc(var(--bar-h) + env(safe-area-inset-bottom, 0px));
+}
+
+img, svg { max-width: 100%; height: auto; }
+svg { display: block; }
+
+/* The page itself must never scroll sideways (plan §5, §7 at 200% zoom).
+   Only .figure__scroll / .table-scroll / the lightbox may scroll. */
+html, body { overflow-x: clip; }
+
+a {
+  color: var(--target);
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: from-font;
+}
+a:hover { color: #24558C; }
+
+/* Focus: 2px --target outline, 2px offset. Never removed (plan §7). */
+:focus-visible {
+  outline: 2px solid var(--target);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+::selection { background: var(--guided-bg); }
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: var(--sp-4) 0;
+}
+
+
+/* -----------------------------------------------------------------------------
+   3  LAYOUT
+   -------------------------------------------------------------------------- */
+
+/* First focusable element on the page. */
+.skip-link {
+  position: fixed;
+  left: var(--sp-2);
+  top: -4rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  background: var(--ink);
+  color: #fff;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+}
+.skip-link:focus { top: var(--sp-2); }
+
+/* .layout wraps the sidebar and <main>. On mobile it is a plain block. */
+.layout { width: 100%; }
+.main { min-width: 0; }
+
+/* Sidebar is desktop-only; see §15. */
+.sidebar { display: none; }
+
+/* A macro-section. One per nav entry, seven in total. */
+.section {
+  padding-block: var(--sp-section);
+  scroll-margin-top: 1rem;          /* plan §4 */
+}
+.section + .section { border-top: 1px solid var(--rule); }
+.section--panel { background: var(--panel); }   /* optional emphasis ground */
+
+/* THE CONTENT COLUMN.
+   A three-track grid: gutter | measure | gutter. Children sit in the middle
+   track by default; anything with .breakout spans the full width, which is
+   how a wide figure escapes the 68ch measure WITHOUT the page ever scrolling
+   sideways (it is bounded by the container, not by 100vw, so it also stays
+   correct next to the desktop sidebar). */
+.col {
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(var(--gutter), 1fr)
+    [content-start] min(var(--measure), 100% - (var(--gutter) * 2)) [content-end]
+    minmax(var(--gutter), 1fr) [full-end];
+}
+.col > * { grid-column: content; }
+.col > .breakout { grid-column: full; }
+
+/* Vertical rhythm inside the column: one rule instead of margins everywhere. */
+.col > * + * { margin-top: var(--sp-3); }
+.col > * + h3, .col > * + .subhead { margin-top: var(--sp-5); }
+
+/* A named sub-block inside a section (anchorable, but not in the nav). */
+.subsection { scroll-margin-top: 1rem; }
+
+
+/* -----------------------------------------------------------------------------
+   4  TYPOGRAPHY
+   -------------------------------------------------------------------------- */
+
+h1, h2, h3, h4 {
+  color: var(--ink);
+  line-height: var(--lh-head);
+  font-weight: 700;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h1 { font-size: var(--fs-hero); letter-spacing: -0.02em; }
+h2 { font-size: var(--fs-h2); letter-spacing: -0.01em; }
+h3 { font-size: var(--fs-h3); }
+h4 { font-size: var(--fs-body); }
+
+/* Macro-section heading with its emoji wayfinder.
+   One emoji per macro-section heading. The emoji is decorative: it MUST
+   carry aria-hidden="true" and the heading text must stand alone. */
+.section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  margin-bottom: var(--sp-3);
+}
+.section-title__mark {
+  font-size: 0.8em;
+  line-height: 1;
+  flex: none;
+  /* Emoji fonts ignore colour; this only affects a fallback glyph. */
+  color: var(--muted);
+}
+/* Optional eyebrow above the heading: "Section 3". */
+.section-eyebrow {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: var(--sp-1);
+}
+
+p { margin: 0; }
+
+/* The lede: the hero claim, and the opening plain-language answer of a
+   subsection. 19px, --ink, never more than a few lines. */
+.lede {
+  font-size: var(--fs-lede);
+  color: var(--ink);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+/* Small print: captions, scope lines, footnotes, acknowledgements. */
+.small { font-size: var(--fs-small); color: var(--muted); line-height: 1.5; }
+/* A definition or a statistical caveat is not small print -- it is the thing a
+   reader most needs to be able to read. Body size, body colour, quiet only in
+   that it sits below the claim it qualifies. */
+.note { font-size: var(--fs-body); color: var(--body); line-height: var(--lh-body); }
+.small--faint { color: var(--faint); }   /* white grounds only, not --panel */
+
+/* Values, PDB IDs, formulas, parameter names. */
+.mono, code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  font-variant-numeric: tabular-nums;
+}
+code {
+  background: var(--panel);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  color: var(--ink);
+}
+pre {
+  margin: 0;
+  padding: var(--sp-2);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow-x: auto;               /* scrolls itself, never the page */
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  line-height: 1.5;
+  color: var(--ink);
+  -webkit-overflow-scrolling: touch;
+}
+pre code { background: none; padding: 0; }
+
+/* Inline semantic colouring of a term. Always accompanied by the word itself. */
+.t-target  { color: var(--target); font-weight: 600; }
+.t-guided  { color: var(--guided-dk); font-weight: 600; }
+.t-ablated { color: var(--ablated-dk); font-weight: 600; }
+
+ul, ol { margin: 0; padding-left: 1.25em; }
+li + li { margin-top: var(--sp-1); }
+.list-tight li + li { margin-top: 0.25rem; }
+
+/* An unbulleted list (roles, resources). */
+.list-plain { list-style: none; padding-left: 0; }
+
+blockquote {
+  margin: 0;
+  padding-left: var(--sp-2);
+  border-left: var(--rule-accent) solid var(--rule);
+  color: var(--body);
+}
+
+abbr[title] { text-decoration: underline dotted; cursor: help; }
+
+
+/* -----------------------------------------------------------------------------
+   5  HERO
+   Plan §1.1: do not force everything above the fold. Title, claim, both
+   buttons and at least the first stat card in the first viewport; the scope
+   line and the author list continue below. One small scroll is expected.
+   -------------------------------------------------------------------------- */
+
+.hero { padding-block: var(--sp-5) var(--sp-4); }
+.hero h1 { margin-bottom: var(--sp-3); }
+.hero .lede { margin-bottom: var(--sp-4); }
+
+/* The poster's hook, above the lede. Sized between body and lede so it reads as
+   the setup and the lede still lands as the headline answer. */
+.hero__hook {
+  font-size: var(--fs-body);
+  color: var(--body);
+  margin-bottom: var(--sp-3);
+}
+.hero__hook b { color: var(--ink); }
+
+/* Short scope line: "Docking-based, predicted selectivity. Selection-level
+   proof of concept." Sits below the fold, deliberately. */
+.hero__scope {
+  /* This is the claim's primary qualification, not a footnote. Body size. */
+  font-size: var(--fs-body);
+  color: var(--muted);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--sp-2);
+}
+
+.byline { font-size: var(--fs-small); color: var(--muted); }
+.byline strong { color: var(--ink); font-weight: 600; }
+.byline sup { font-size: 0.75em; }
+.affiliations { font-size: var(--fs-small); color: var(--faint); }
+
+
+/* -----------------------------------------------------------------------------
+   6  BUTTONS
+   -------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: var(--tap);
+  padding: 0.625rem 1.125rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+}
+
+/* The primary action: LinkedIn. Filled --target, white text (5.3:1). */
+.btn--primary { background: var(--target); color: #fff; }
+.btn--primary:hover { background: #275C9B; color: #fff; }
+
+/* Secondary: email. Outlined. */
+.btn--ghost {
+  background: var(--bg);
+  color: var(--ink);
+  border-color: var(--rule);
+}
+.btn--ghost:hover { border-color: var(--faint); color: var(--ink); }
+
+/* Quiet inline action: "View all 9 receptors", "Expand all". */
+.btn--quiet {
+  background: var(--panel);
+  color: var(--ink);
+  border-color: var(--rule);
+  font-size: var(--fs-small);
+  min-height: 44px;
+  padding: 0.5rem 0.875rem;
+}
+.btn--quiet:hover { background: #E9EEF2; }
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+/* Below 420px the two hero buttons stack full-width (plan §7.1). */
+@media (max-width: 419px) {
+  .btn-row .btn { flex: 1 1 100%; }
+}
+
+/* A forward link to another section: "see the controlled experiment ↓". */
+.jump {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 0.35em;
+  font-weight: 600;
+}
+
+
+/* -----------------------------------------------------------------------------
+   7  STAT CARDS
+   Big numeral + label + sub-line, left accent rule in the semantic colour.
+   Stacked on mobile, row from 720px (plan §1.2).
+   -------------------------------------------------------------------------- */
+
+.stats {
+  display: grid;
+  gap: var(--sp-2);
+}
+@media (min-width: 720px) {
+  .stats { grid-template-columns: repeat(3, 1fr); }
+}
+
+.stat {
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) calc(var(--sp-2) - 3px);
+  background: var(--panel);
+  border-left: var(--rule-accent) solid var(--rule);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.stat__num {
+  display: block;
+  font-size: var(--fs-stat);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.stat__label {
+  display: block;
+  margin-top: 0.35rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.stat__sub {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+/* Semantic variants. The accent rule and the numeral carry the colour; the
+   label always states the meaning in words, so colour is never load-bearing.
+   Plan §1.2: 8/8 teal (benefit) · 13.95% ink (neither) · −0.058 z terracotta
+   (cost). */
+.stat--guided  { border-left-color: var(--guided);  background: var(--guided-bg); }
+.stat--guided  .stat__num { color: var(--guided-dk); }
+.stat--ablated { border-left-color: var(--ablated); background: var(--ablated-bg); }
+.stat--ablated .stat__num { color: var(--ablated-dk); }
+.stat--target  { border-left-color: var(--target);  background: var(--target-bg); }
+.stat--target  .stat__num { color: var(--target); }
+.stat--ink     { border-left-color: var(--ink); }
+
+
+/* -----------------------------------------------------------------------------
+   8  DISCLOSURE: the <details> block
+   Native <details>/<summary>: works with JS disabled, keyboard-accessible for
+   free, findable by in-page search, prints expanded (plan §4).
+
+   Summary labels MUST vary (plan §3). Use the one that fits:
+     Technical details · Protocol and validation · Why this decision?
+     See the numbers · What this does not show
+   -------------------------------------------------------------------------- */
+
+.disclosure {
+  border: 1px solid var(--rule);
+  border-left: var(--rule-accent) solid var(--guided);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--bg);
+  overflow: hidden;   /* keeps the summary's tint inside the rounded corner */
+}
+
+.disclosure__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--tap);
+  padding: 0.75rem var(--sp-2);
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  cursor: pointer;
+  list-style: none;             /* kill the default triangle … */
+  user-select: none;
+}
+.disclosure__summary::-webkit-details-marker { display: none; }  /* … Safari */
+.disclosure__summary:hover { background: #E9EEF2; }
+
+/* Chevron, drawn in CSS. Rotates on open. */
+.disclosure__summary::after {
+  content: "";
+  flex: none;
+  margin-left: auto;
+  width: 0.5em;
+  height: 0.5em;
+  border-right: 2px solid var(--guided-dk);
+  border-bottom: 2px solid var(--guided-dk);
+  transform: rotate(45deg);
+  transform-origin: 55% 55%;
+}
+
+/* OPEN STATE: must be obvious at a glance while scrolling (plan §3):
+   the summary row goes teal-tinted, its text goes teal, the chevron points up,
+   and the body appears on --panel with the left rule continuing. */
+.disclosure[open] > .disclosure__summary {
+  background: var(--guided-bg);
+  color: var(--guided-dk);
+  box-shadow: inset 0 -1px 0 var(--rule);
+}
+.disclosure[open] > .disclosure__summary::after { transform: rotate(-135deg); }
+
+.disclosure__body {
+  padding: var(--sp-2);
+  background: var(--panel);
+  color: var(--body);
+}
+.disclosure__body > * + * { margin-top: var(--sp-2); }
+.disclosure__body > ul, .disclosure__body > ol { padding-left: 1.15em; }
+
+/* A caveat accordion, "What this does not show", reads in the cost colour
+   so a scanner can tell a caveat from a protocol without opening it. */
+.disclosure--caution { border-left-color: var(--ablated); }
+.disclosure--caution[open] > .disclosure__summary {
+  background: var(--ablated-bg);
+  color: var(--ablated-dk);
+}
+.disclosure--caution .disclosure__summary::after {
+  border-right-color: var(--ablated-dk);
+  border-bottom-color: var(--ablated-dk);
+}
+
+/* A section-sized disclosure holding whole subsections rather than a footnote.
+   It reads as a container, not as an aside: no panel fill on the body, the
+   subsections inside keep their own rhythm, and its own summary is larger. */
+.disclosure--wide { border-left-color: var(--rule); background: transparent; }
+.disclosure--wide > .disclosure__summary { font-size: var(--fs-h3); line-height: 1.35; }
+.disclosure--wide[open] > .disclosure__summary {
+  background: var(--panel);
+  color: var(--ink);
+}
+.disclosure--wide > .disclosure__body {
+  padding: var(--sp-3) 0 0;
+  background: transparent;
+}
+.disclosure--wide > .disclosure__body > * + * { margin-top: var(--sp-3); }
+
+/* Expand all / Collapse all row. */
+.disclosure-controls {
+  display: flex;
+  gap: var(--sp-1);
+  justify-content: flex-end;
+}
+
+
+/* -----------------------------------------------------------------------------
+   9  FIGURES
+   Hand-authored iconography and flow diagrams → inline <svg>.
+   Generated matplotlib figures → external <img src="*.svg"> (plan §5).
+   -------------------------------------------------------------------------- */
+
+/* Kills the UA's default `figure { margin: 1em 40px }`. It has the same
+   specificity as .col > * + * and is declared later, so it used to win the tie
+   and every figure hugged the paragraph above it -- hence the second rule. */
+.figure { margin: 0; }
+.col > * + .figure { margin-top: var(--sp-3); }
+
+/* One sentence before the figure saying what it shows (plan §5). */
+.figure__lead { margin-bottom: var(--sp-1); }
+
+/* The plate. Generated SVGs carry hard-coded near-black strokes, so they get
+   a white ground and a hairline, which also frames inline diagrams. */
+.figure__plate {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--sp-1);
+}
+.figure__plate > img,
+.figure__plate > svg { width: 100%; height: auto; display: block; }
+
+/* WIDE FIGURES THAT MUST NOT MOVE THE PAGE.
+   Wrap the image in .figure__scroll. It scrolls itself; the page never does.
+   Give it role="region", an aria-label, and tabindex="0" so it is reachable
+   and operable by keyboard (plan §7). */
+.figure__scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.figure__scroll:focus-visible { outline-offset: 0; }
+/* Inside a scroll region an image keeps its intrinsic width instead of
+   squashing; set min-width on the child when a minimum legible size exists. */
+.figure__scroll > img,
+.figure__scroll > svg { max-width: none; width: auto; height: auto; }
+
+/* Hint that a region scrolls: text, not colour alone. */
+.figure__hint,
+.table-scroll__hint {
+  font-size: var(--fs-small);
+  /* --muted, not --faint: these hints live inside .disclosure__body, whose
+     ground is --panel, where --faint is 4.30:1 and fails AA. --muted is 5.16:1. */
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+figcaption,
+.figure figcaption {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--muted);
+}
+figcaption b, figcaption strong { color: var(--ink); }
+
+/* A figure whose panels are only legible at full width. Below the desktop
+   breakpoint the plate is hidden and the lightbox button is the route to it --
+   plan §5 forbids showing a nine-panel figure squeezed into a 390px column, and
+   a horizontal pan box is not an acceptable substitute either. */
+.figure--desktop-only > .figure__plate { display: none; }
+@media (min-width: 900px) { .figure--desktop-only > .figure__plate { display: block; } }
+@media print { .figure--desktop-only > .figure__plate { display: block; } }
+
+/* Break the 68ch measure, up to 1100px. Use on <figure class="figure breakout">. */
+.breakout > .figure__plate,
+.figure.breakout { width: min(var(--wide), 100%); margin-inline: auto; }
+
+/* Narrow-screen text fallback for a wide diagram (e.g. the ALGen chain).
+   Shown below 560px, hidden above; the figure itself does the reverse only if
+   you also apply .figure--wide-only. */
+.flow-fallback {
+  display: block;
+  font-size: var(--fs-small);
+  color: var(--body);
+}
+.flow-fallback ol { padding-left: 1.15em; }
+@media (min-width: 560px) { .flow-fallback { display: none; } }
+
+/* --- Lightbox: native <dialog>, full screen, pinch-zoomable -------------- */
+.lightbox {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--bg);
+  color: var(--body);
+}
+/* [open] is load-bearing: a bare display:flex would defeat the UA's
+   dialog:not([open]) { display: none } and paint every closed dialog. */
+.lightbox[open] { display: flex; flex-direction: column; }
+.lightbox::backdrop { background: rgba(22, 33, 46, 0.8); }
+.lightbox__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  padding-top: calc(var(--sp-1) + env(safe-area-inset-top, 0px));
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.lightbox__title { font-size: var(--fs-small); font-weight: 700; color: var(--ink); }
+.lightbox__close {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.lightbox__stage {
+  /* The reader studies the figure here: scroll both axes, pinch to zoom.
+     Flex, not calc: the bar is --tap + 16px of padding + 1px border + the top
+     safe-area inset, so any hand-computed height pushed the stage's bottom
+     edge off-screen. */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y pinch-zoom;
+  padding: var(--sp-2);
+  padding-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom, 0px));
+}
+.lightbox__stage img { max-width: 100%; margin-inline: auto; }
+
+
+/* -----------------------------------------------------------------------------
+   10  CALLOUTS
+   Left-ruled tinted box for the claims that must not be missed. Three tones
+   (plan §6): neutral, benefit teal, caution terracotta.
+   -------------------------------------------------------------------------- */
+
+.callout {
+  padding: var(--sp-2);
+  padding-left: calc(var(--sp-2) - 3px);
+  background: var(--panel);
+  border-left: var(--rule-accent) solid var(--faint);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--body);
+}
+.callout > * + * { margin-top: var(--sp-1); }
+
+/* First line, set in --ink: "Docking guides selection, not gradients." */
+.callout__title {
+  display: block;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Benefit / AT-guided. */
+.callout--benefit {
+  background: var(--guided-bg);
+  border-left-color: var(--guided);
+}
+.callout--benefit .callout__title { color: var(--guided-dk); }
+
+/* Caution / cost / "what this does not show". */
+.callout--caution {
+  background: var(--ablated-bg);
+  border-left-color: var(--ablated);
+}
+.callout--caution .callout__title { color: var(--ablated-dk); }
+
+/* Bare variant: no fill, teal rule. Used for the §1.2 interpretation line,
+   which must not compete typographically with the stat numerals. */
+.callout--bare {
+  background: none;
+  border-left-color: var(--guided);
+  padding-block: 0.25rem;
+}
+
+
+/* -----------------------------------------------------------------------------
+   11  CHIPS
+   Term chip: receptor roles (SCORED / HELD OUT / REMOVED) and β_AT = 1 / 0.
+   Capability chip: the four outline chips in the author card.
+   -------------------------------------------------------------------------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  align-items: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  line-height: 1.3;
+  /* Not nowrap: the page is overflow-x: clip, so a chip that cannot shrink is
+     silently cut off rather than scrolled at 200% zoom. */
+  white-space: normal;
+  max-width: 100%;
+}
+
+/* Filled: SCORED receptors, and β_AT = 1 (AT-guided). */
+.chip--scored,
+.chip--guided {
+  background: var(--guided-dk);
+  border-color: var(--guided-dk);
+  color: #fff;
+}
+/* Tinted: HELD OUT receptors. */
+.chip--held {
+  background: var(--guided-bg);
+  border-color: var(--held);
+  color: var(--guided-dk);
+}
+/* Outline grey: REMOVED receptors. */
+.chip--removed {
+  background: var(--bg);
+  border-color: var(--faint);
+  color: var(--faint);
+  border-style: dashed;
+}
+/* Filled terracotta: β_AT = 0 (AT-ablated). */
+.chip--ablated {
+  background: var(--ablated-dk);
+  border-color: var(--ablated-dk);
+  color: #fff;
+}
+/* Filled blue: CDK2 / target. */
+.chip--target {
+  background: var(--target);
+  border-color: var(--target);
+  color: #fff;
+}
+
+/* The poster's status marks ride inside the chip. Decorative: the chip's own
+   words carry the meaning, so mark it aria-hidden. */
+.chip__mark { font-size: 0.95em; line-height: 1; }
+
+/* Capability chip: small rounded outline chip, --muted. Not a skills wall. */
+.chip--capability {
+  font-weight: 400;
+  color: var(--muted);
+  border-color: var(--rule);
+  background: var(--bg);
+  white-space: normal;
+}
+
+/* A chip that names a role and then lists members inline. */
+.chip-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: var(--fs-small);
+}
+.chip-line__members { color: var(--body); }
+
+/* The "This project combined" strip (plan §7.2): quiet fact sheet, no accent
+   colour. Two columns on mobile, three from 720px. */
+.factgrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-1);
+}
+@media (min-width: 720px) { .factgrid { grid-template-columns: repeat(3, 1fr); } }
+.factgrid__item {
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+}
+.factgrid__label { display: block; font-weight: 700; color: var(--ink); font-size: var(--fs-small); }
+.factgrid__value { display: block; margin-top: 0.15rem; font-size: var(--fs-small); color: var(--muted); }
+
+
+/* -----------------------------------------------------------------------------
+   12  TABLES
+   Zebra-free, hairline rules, tabular numerics, and never a cause of page
+   scroll (plan §6, §7).
+   -------------------------------------------------------------------------- */
+
+/* Wrapper for any table wider than the column. role="region" + aria-label +
+   tabindex="0" so keyboard users can scroll it. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+  line-height: 1.45;
+}
+.table caption {
+  caption-side: top;
+  text-align: left;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  padding-bottom: var(--sp-1);
+}
+.table th, .table td {
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+.table thead th {
+  color: var(--ink);
+  font-weight: 700;
+  border-bottom: 2px solid var(--rule);
+  white-space: nowrap;
+}
+.table tbody tr:last-child td { border-bottom: 0; }
+.table th[scope="row"] { color: var(--ink); font-weight: 600; }
+
+/* Numeric cells: right-aligned, tabular figures. */
+.table .num, .table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.table .mono { white-space: nowrap; }
+
+/* Role markers inside a table: colour PLUS the word (plan §7). */
+.table .role { display: inline-flex; align-items: center; gap: 0.35em; white-space: nowrap; }
+.table .role::before {
+  content: "";
+  width: 0.6em; height: 0.6em;
+  border-radius: 2px;
+  background: var(--rule);
+  flex: none;
+}
+.table .role--scored::before { background: var(--guided); }
+.table .role--held::before   { background: var(--held); border-radius: 999px; } /* shape differs too */
+.table .role--target::before { background: var(--target); }
+.table .role--removed::before { background: none; border: 1px dashed var(--faint); }
+
+/* The pair tables are prose, not data: they carry the visible answer of their
+   subsection, so they read at body size while the numeric tables stay at 14px. */
+.table--pairs { font-size: var(--fs-body); }
+
+/* TWO-COLUMN PAIR TABLES (limitation / what would settle it) reflow into
+   stacked blocks below 560px, scrolling long prose sideways is worse than
+   stacking it. Each <td> needs data-label="…". */
+@media (max-width: 559px) {
+  .table--pairs, .table--pairs tbody, .table--pairs tr, .table--pairs td { display: block; width: 100%; }
+  .table--pairs thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .table--pairs tr {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: var(--sp-1);
+    margin-bottom: var(--sp-1);
+  }
+  .table--pairs td { border: 0; padding: 0.25rem 0; }
+  .table--pairs td::before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 700;
+    font-size: 0.8125rem;
+    color: var(--muted);   /* --faint is 4.30:1 on the --panel ground these sit on */
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+
+/* -----------------------------------------------------------------------------
+   13  CARDS, LINK LISTS, CITATIONS
+   -------------------------------------------------------------------------- */
+
+/* Bordered card. Reads as a signature, not a landing page (plan §7.1). */
+.card {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-3);
+  background: var(--bg);
+}
+.card > * + * { margin-top: var(--sp-2); }
+
+.card__name { font-size: var(--fs-h2); }
+.card__tagline {
+  font-size: var(--fs-small);
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: none;
+  margin-top: 0.25rem;
+}
+/* Optional 96px portrait. The layout must work without it. */
+.card__portrait {
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto var(--sp-1);
+}
+@media (min-width: 720px) {
+  .card__portrait { float: right; margin: 0 0 var(--sp-1) var(--sp-2); }
+}
+
+/* Resource list with a source badge. */
+.linklist { list-style: none; padding-left: 0; }
+.linklist li { padding-block: 0.4rem; border-bottom: 1px solid var(--rule); }
+.linklist li:last-child { border-bottom: 0; }
+.linklist a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
+.linklist__src {
+  display: inline-block;
+  margin-left: 0.5em;
+  padding: 0.1em 0.45em;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 400;
+  white-space: nowrap;
+}
+.linklist__note { display: block; font-size: var(--fs-small); color: var(--muted); }
+
+/* Selectable citation text. */
+.citation {
+  font-size: var(--fs-small);
+  color: var(--body);
+  border-left: var(--rule-accent) solid var(--rule);
+  padding-left: var(--sp-2);
+  user-select: all;
+}
+
+
+/* -----------------------------------------------------------------------------
+   14  STICKY BOTTOM BAR + CONTENTS SHEET  (mobile navigation, plan §4)
+   Three targets: Contents · About · LinkedIn.
+   -------------------------------------------------------------------------- */
+
+.bottombar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.95);
+  border-top: 1px solid var(--rule);
+  /* Browser chrome and the home indicator live exactly here; in landscape
+     on a notched phone the sensor housing eats the left inset too. */
+  padding: 6px max(var(--sp-1), env(safe-area-inset-right, 0px))
+           calc(6px + env(safe-area-inset-bottom, 0px))
+           max(var(--sp-1), env(safe-area-inset-left, 0px));
+}
+@supports (backdrop-filter: blur(8px)) {
+  .bottombar { background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(8px); }
+}
+.bottombar__inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-1);
+  max-width: 34rem;
+  margin-inline: auto;
+}
+.bottombar__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  min-height: var(--tap);
+  padding: 0 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.bottombar__btn:hover { background: var(--panel); color: var(--ink); }
+.bottombar__btn--primary {
+  background: var(--target);
+  border-color: var(--target);
+  color: #fff;
+}
+.bottombar__btn--primary:hover { background: #275C9B; color: #fff; }
+.bottombar__icon { font-size: 1em; line-height: 1; }
+
+/* --- Contents: native <dialog> as a bottom sheet. Seven sections plus the
+       subsection index; the list scrolls inside a capped sheet (plan §4). --- */
+.sheet {
+  width: 100%;
+  max-width: 34rem;
+  margin: auto auto 0;             /* pinned to the bottom edge */
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--bg);
+  color: var(--body);
+  box-shadow: 0 -8px 40px rgba(22, 33, 46, 0.22);
+  /* With the subsection index the list no longer fits one screen: cap it and
+     let the list scroll, keeping the header pinned. */
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sheet__list { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.sheet__head { flex: none; }
+.sheet::backdrop { background: rgba(22, 33, 46, 0.45); }
+.sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border-bottom: 1px solid var(--rule);
+}
+.sheet__title { font-size: var(--fs-h3); }
+.sheet__close {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.sheet__list {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-1) var(--sp-1)
+           calc(var(--sp-1) + env(safe-area-inset-bottom, 0px));
+}
+.sheet__list li { margin: 0; }
+.sheet__link {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  min-height: var(--tap);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+.sheet__link:hover { background: var(--panel); color: var(--ink); }
+.sheet__num {
+  flex: none;
+  width: 1.5em;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+
+/* Subsection index. The h3 ids already exist; listing them is what turns a
+   40-screen scroll into something a reader can skip around in. */
+.sheet__sub {
+  list-style: none;
+  margin: 0 0 var(--sp-1);
+  padding: 0 0 0 2.25rem;
+}
+.sheet__sublink {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0.25rem 0.75rem;
+  border-left: 2px solid var(--rule);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--body);
+  font-size: var(--fs-small);
+  text-decoration: none;
+}
+.sheet__sublink:hover { background: var(--panel); color: var(--ink); }
+
+
+/* -----------------------------------------------------------------------------
+   15  DESKTOP  (>= 900px)
+   ~180px sticky sidebar (plan §4). Pick the sidebar OR a slim top nav; this
+   stylesheet implements the sidebar; do not do both.
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 900px) {
+
+  :root {
+    --fs-hero:  2.75rem;   /* 44px */
+    --fs-h2:    1.875rem;  /* 30px */
+    --fs-h3:    1.25rem;   /* 20px */
+    --fs-stat:  3.25rem;   /* 52px */
+    --sp-section: 5rem;    /* 80px */
+    --gutter: 2rem;
+  }
+
+  body { padding-bottom: 0; }        /* no bottom bar on desktop */
+  .bottombar { display: none; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+    gap: var(--sp-4);
+    max-width: calc(var(--sidebar-w) + var(--wide) + var(--sp-4) + var(--sp-4) * 2);
+    margin-inline: auto;
+    padding-inline: var(--sp-2);
+  }
+
+  .sidebar {
+    display: block;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding-block: var(--sp-4);
+  }
+  .sidebar__brand {
+    font-size: var(--fs-small);
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: var(--sp-2);
+  }
+  /* LinkedIn persists as a button at the top of the sidebar (plan §4). */
+  .sidebar .btn { width: 100%; margin-bottom: var(--sp-2); font-size: var(--fs-small); }
+  .sidebar__list { list-style: none; margin: 0; padding: 0; }
+  .sidebar__list li { margin: 0; }
+  .sidebar__link {
+    display: block;
+    padding: 0.5rem 0.6rem;
+    border-left: var(--rule-accent) solid transparent;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: var(--fs-small);
+    line-height: 1.35;
+    min-height: 44px;
+  }
+  .sidebar__link:hover { color: var(--ink); background: var(--panel); }
+  /* Active section, set by IntersectionObserver. Weight + rule + colour, so
+     it is not signalled by colour alone. */
+  .sidebar__link.is-active,
+  .sidebar__link[aria-current="true"] {
+    color: var(--ink);
+    font-weight: 700;
+    border-left-color: var(--guided);
+    background: var(--guided-bg);
+  }
+
+  .section { scroll-margin-top: var(--sp-2); }
+  .section + .section { border-top: 1px solid var(--rule); }
+
+  /* Lightbox becomes a centred panel rather than full-bleed. */
+  .lightbox {
+    width: min(1200px, 94vw);
+    height: min(90vh, 900px);
+    max-width: 94vw;
+    margin: auto;
+    border-radius: var(--radius-lg);
+  }
+}
+
+
+/* -----------------------------------------------------------------------------
+   16  ANIMATION UTILITIES
+   All motion lives inside @media (prefers-reduced-motion: no-preference).
+   With reduced motion, or with JS disabled, everything is simply in its final
+   state: nothing is hidden and nothing depends on an animation completing.
+
+   The `.js` class is added by one inline line in <head>:
+       document.documentElement.classList.add('js');
+   Without it the reveal utility does nothing, so a no-JS reader sees the page
+   fully. One IntersectionObserver adds .is-visible to each .reveal element;
+   that single class also triggers the bars and the funnel stages inside it.
+   -------------------------------------------------------------------------- */
+
+@media screen and (prefers-reduced-motion: no-preference) {
+
+  html { scroll-behavior: smooth; }
+
+  /* --- reveal on scroll ------------------------------------------------- */
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 420ms ease-out, transform 420ms ease-out;
+  }
+  .js .reveal.is-visible { opacity: 1; transform: none; }
+  /* Stagger children with style="--i:0|1|2" on each. */
+  .js .reveal[style*="--i"] { transition-delay: calc(var(--i, 0) * 90ms); }
+
+  /* --- bar grow ----------------------------------------------------------
+     For inline-SVG <rect> bars. Set the rect's final width in the markup;
+     the animation scales it in from its own left edge, so the geometry stays
+     correct if the animation never runs. */
+  .bar-grow {
+    transform-box: fill-box;
+    transform-origin: left center;
+  }
+  .js .reveal .bar-grow { transform: scaleX(0); }
+  .js .reveal.is-visible .bar-grow {
+    animation: bar-grow 700ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+  @keyframes bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  /* --- funnel / flow stages filling ------------------------------------- */
+  .js .reveal .stage-fill { transform: scaleY(0); transform-box: fill-box; transform-origin: top center; }
+  .js .reveal.is-visible .stage-fill {
+    animation: stage-fill 520ms ease-out both;
+    animation-delay: calc(var(--i, 0) * 130ms);
+  }
+  @keyframes stage-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+  /* --- sequenced steps inside one diagram --------------------------------
+     For the two-question test: question 1, then the "not the same question"
+     divider, then question 2. Same fade-and-rise as .reveal, but per <g>. */
+  .js .reveal .q-step { opacity: 0; transform: translateY(6px); }
+  .js .reveal.is-visible .q-step {
+    animation: q-step 460ms ease-out both;
+    animation-delay: calc(var(--i, 0) * 260ms);
+  }
+  @keyframes q-step {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* --- sliding onto a shared scale ---------------------------------------
+     The normalisation ruler: each curve starts at the x-offset it had on the
+     raw scale (--dx) and settles on the shared origin. Delayed past the
+     stage-fill above it (260ms stagger + 520ms) so the two do not overlap.
+     Geometry is correct without the animation; --dx only ever offsets from
+     the final position. */
+  .js .reveal .slide-x { transform: translateX(var(--dx, 0)); }
+  .js .reveal.is-visible .slide-x {
+    animation: slide-x 820ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    animation-delay: 820ms;
+  }
+  @keyframes slide-x {
+    from { transform: translateX(var(--dx, 0)); }
+    to   { transform: translateX(0); }
+  }
+
+  /* --- the ALGen loop trace ---------------------------------------------
+     A dash runs once around the loop path, continuously. Give the <path>
+     pathLength="100" in the markup so the dash maths is resolution-free. */
+  .loop-trace {
+    stroke-dasharray: 16 84;
+    stroke-dashoffset: 0;
+    /* Three passes, then it settles. An indefinite loop in the corner of the eye
+       competes with the body text the reader is trying to read. */
+    animation: loop-trace 4.5s linear 3;
+  }
+  @keyframes loop-trace { to { stroke-dashoffset: -100; } }
+
+  /* --- chevron and small state transitions ------------------------------ */
+  .disclosure__summary::after { transition: transform 180ms ease; }
+  .btn, .bottombar__btn, .sheet__link, .sidebar__link {
+    transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  /* --- the Contents sheet sliding up ------------------------------------ */
+  .sheet[open] { animation: sheet-up 220ms cubic-bezier(0.2, 0.7, 0.3, 1); }
+  @keyframes sheet-up { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+}
+
+/* Belt and braces: if anything above ever escapes its media query, this
+   neutralises it for readers who asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Utilities. */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.nowrap { white-space: nowrap; }
+.center { text-align: center; }
+
+
+/* -----------------------------------------------------------------------------
+   17  PRINT
+   A PI may well print this. Drop the furniture, keep the science, and expand
+   every accordion.
+   -------------------------------------------------------------------------- */
+
+@media print {
+
+  :root {
+    --fs-body: 10.5pt;
+    --fs-small: 9pt;
+    --fs-hero: 20pt;
+    --fs-h2: 14pt;
+    --fs-h3: 11.5pt;
+    --fs-stat: 20pt;
+    --sp-section: 1.5rem;
+    --measure: 100%;
+  }
+
+  body { padding-bottom: 0; color: #000; background: #fff; }
+
+  .skip-link, .bottombar, .sidebar, .sheet, .lightbox,
+  .disclosure-controls, .figure__hint, .table-scroll__hint,
+  .btn--quiet, .jump { display: none !important; }
+
+  .layout { display: block; max-width: none; padding: 0; }
+
+  .section { padding-block: var(--sp-3); break-inside: auto; }
+  h1, h2, h3 { break-after: avoid; }
+  .figure, .stat, .callout, table, tr { break-inside: avoid; }
+
+  /* Open every disclosure. Chromium honours ::details-content; other engines
+     need one line of JS: window.onbeforeprint = () =>
+       document.querySelectorAll('details').forEach(d => d.open = true); */
+  ::details-content { content-visibility: visible !important; }
+  .disclosure { border-color: #999; }
+  .disclosure__summary { background: none; }
+  .disclosure__body { background: none; padding-left: 0; }
+
+  /* Scroll regions print in full. */
+  .figure__scroll, .table-scroll, pre { overflow: visible !important; }
+  .figure__scroll > img, .figure__scroll > svg { max-width: 100%; width: 100%; }
+
+  /* Print the URL behind external links: this is a reference document. */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    color: #444;
+    word-break: break-all;
+  }
+  a { color: #000; text-decoration: underline; }
+
+  .card, .table th, .table td { border-color: #999; }
+}
