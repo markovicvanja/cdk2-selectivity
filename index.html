@@ -151,32 +151,123 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 
     <h3 class="subsection" id="bg-cdk2">CDK2 and the cell cycle</h3>
 
-    <p>A cell decides whether to divide at a small number of checkpoints, and those decisions are
-      carried out by enzymes called <b>kinases</b>: proteins that attach a phosphate group to another
-      protein and, in doing so, switch it on or off. <b>CDK2</b>, cyclin-dependent kinase 2, is one
-      of the kinases that pushes a cell through the transition from growth into DNA replication.</p>
+    <p>A dividing cell moves through four phases, and it decides whether to commit at the step from
+      growth into copying its DNA. <b>CDK2</b>, cyclin-dependent kinase 2, is one of the enzymes that
+      drives that step.</p>
 
-    <p>In many tumours that switch is stuck on. Where the machinery upstream of CDK2 is amplified or
-      broken, the cell keeps entering division when it should not, and CDK2 activity is part of what
-      keeps it going. That makes CDK2 a plausible <b>drug target</b>: block the enzyme, and the
-      pathway that depends on it stalls. Interest sharpened once CDK4/6 inhibitors reached the clinic
-      and tumours were observed to escape them through routes that run through CDK2.</p>
+    <figure class="figure reveal">
+      <div class="figure__plate">
+        <svg viewBox="0 0 300 200" role="img"
+             aria-label="The cell cycle drawn as a ring with four phases in order: G1 growth, S
+                         where DNA is copied, G2, and M where the cell divides. The short stretch
+                         of ring between G1 and S is highlighted, and a label marks it as the
+                         transition that CDK2, paired with its cyclin, drives. In a tumour the
+                         cell keeps passing this point when it should stop.">
+
+          <!-- the ring: grey for the phases, blue for the G1 to S transition -->
+          <path d="M157.8 40.5 A56 56 0 0 1 202.6 115.2" fill="none" stroke="var(--rule)" stroke-width="15" stroke-linecap="round"/>
+          <path d="M178.0 144.5 A56 56 0 0 1 118.7 142.4" fill="none" stroke="var(--rule)" stroke-width="15" stroke-linecap="round"/>
+          <path d="M112.5 137.6 A56 56 0 0 1 94.5 88.2"   fill="none" stroke="var(--rule)" stroke-width="15" stroke-linecap="round"/>
+          <path d="M96.2 80.6 A56 56 0 0 1 142.2 40.5"    fill="none" stroke="var(--rule)" stroke-width="15" stroke-linecap="round"/>
+          <path d="M202.6 115.2 A56 56 0 0 1 178.0 144.5" fill="none" stroke="var(--target)" stroke-width="15" stroke-linecap="round"/>
+
+          <!-- one dash travelling the ring: the cycle runs, and it runs through the gate -->
+          <path class="loop-trace" pathLength="100" fill="none" stroke="var(--muted)" stroke-width="3"
+                d="M150 40 A56 56 0 1 1 149.9 40"/>
+
+          <!-- phase labels, outside the ring -->
+          <text x="213" y="62"  font-size="11.5" font-weight="600" fill="var(--body)">G1</text>
+          <text x="213" y="75"  font-size="9"    fill="var(--faint)">grow</text>
+          <text x="147" y="180" font-size="11.5" font-weight="600" fill="var(--body)" text-anchor="middle">S</text>
+          <text x="147" y="192" font-size="9"    fill="var(--faint)" text-anchor="middle">copy the DNA</text>
+          <text x="74"  y="126" font-size="11.5" font-weight="600" fill="var(--body)">G2</text>
+          <text x="88"  y="45"  font-size="11.5" font-weight="600" fill="var(--body)" text-anchor="end">M</text>
+          <text x="88"  y="57"  font-size="9"    fill="var(--faint)" text-anchor="end">divide</text>
+
+          <!-- the point of the figure -->
+          <text x="150" y="92"  font-size="10.5" fill="var(--muted)" text-anchor="middle">one turn,</text>
+          <text x="150" y="106" font-size="10.5" fill="var(--muted)" text-anchor="middle">one division</text>
+
+          <!-- leader from the blue arc to its label -->
+          <path d="M200 137 L219 150" fill="none" stroke="var(--target)" stroke-width="1.5"/>
+          <circle cx="200" cy="137" r="2.6" fill="var(--target)"/>
+          <text x="297" y="156" font-size="10.5" font-weight="700" fill="var(--target)" text-anchor="end">CDK2</text>
+          <text x="297" y="168" font-size="9" fill="var(--muted)" text-anchor="end">opens this gate</text>
+        </svg>
+      </div>
+      <figcaption><b>Where CDK2 acts.</b> The commitment step, from growth into copying the
+        DNA.</figcaption>
+    </figure>
+
+    <p>In many tumours the cell keeps taking that step when it should stop, so blocking CDK2 is worth
+      trying. Interest sharpened once CDK4/6 inhibitors reached the clinic and tumours escaped them
+      by routes running through CDK2.</p>
 
 
     <!-- ===== 2.2 ============================================================ -->
 
     <h3 class="subsection" id="bg-selectivity">The problem: kinases all look alike inside</h3>
 
-    <p>Almost every kinase inhibitor in use works the same way: it sits in the pocket where the
-      enzyme would normally bind <b>ATP</b>, the molecule kinases consume to do their job. Blocking
-      that pocket blocks the enzyme.</p>
+    <p>Almost every kinase inhibitor works the same way: it plugs the pocket where the enzyme would
+      otherwise bind <b>ATP</b>. Humans have on the order of five hundred kinases, and that pocket is
+      the part of them that is <em>most</em> alike.</p>
 
-    <p>The difficulty is that the human genome encodes on the order of five hundred protein kinases,
-      and that ATP pocket is the part of them that is <em>most</em> alike. A molecule shaped to fit
-      CDK2's pocket will, by construction, fit a good number of its relatives too. Those relatives
-      have their own jobs in the cell, so binding them is not a neutral event: unintended kinase
-      activity is a recognised source of toxicity, of dose limits that keep a drug from reaching a
-      useful concentration, and of compounds that fail late and expensively.</p>
+    <figure class="figure reveal">
+      <div class="figure__plate">
+        <svg viewBox="0 0 300 182" role="img"
+             aria-label="Three kinases side by side: CDK2 and two related kinases. Every kinase is
+                         built from two lobes with a cleft between them, and the drug binds in that
+                         cleft, where the enzyme would otherwise hold ATP. The outlines of the lobes
+                         differ from one kinase to the next, but the cleft is drawn as exactly the
+                         same shape in all three, and a dotted rule joins them. That is why a
+                         molecule shaped to fit CDK2 also fits its relatives.">
+
+          <text x="150" y="14" font-size="10" fill="var(--faint)" text-anchor="middle">
+            three different kinases, each built from two lobes</text>
+
+          <g transform="translate(52,70)"><g class="q-step" style="--i:0">
+            <path d="M-20 -30 C-6 -37 14 -33 21 -21 C25 -14 19 -10 9 -9 L-14 -9 C-23 -9 -26 -22 -20 -30 Z" fill="var(--target-bg)" stroke="var(--target)" stroke-width="2"/>
+            <path d="M-20 7 C-4 3 16 5 26 14 C34 24 27 39 8 40 C-11 41 -29 33 -31 19 C-32 12 -27 9 -20 7 Z" fill="var(--target-bg)" stroke="var(--target)" stroke-width="2"/>
+            <path d="M-19 -6 C-24 -6 -24 4 -19 4 L10 4 C14 4 16 2 16 -1 C16 -4 14 -6 10 -6 Z" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.6"
+                  stroke-linejoin="round"/>
+          </g></g>
+          <text x="52" y="126" font-size="11" font-weight="700" fill="var(--target)" text-anchor="middle">CDK2</text>
+          <text x="52" y="138" font-size="9" fill="var(--faint)" text-anchor="middle">the target</text>
+
+          <g transform="translate(150,70)"><g class="q-step" style="--i:1">
+            <path d="M-16 -33 C-4 -39 12 -32 17 -22 C20 -15 15 -10 7 -9 L-12 -9 C-20 -9 -22 -26 -16 -33 Z" fill="var(--ablated-bg)" stroke="var(--ablated)" stroke-width="2" stroke-dasharray="5 4"/>
+            <path d="M-20 7 C-6 2 12 4 23 11 C34 19 32 36 11 39 C-8 42 -27 35 -30 21 C-32 12 -27 9 -20 7 Z" fill="var(--ablated-bg)" stroke="var(--ablated)" stroke-width="2" stroke-dasharray="5 4"/>
+            <path d="M-19 -6 C-24 -6 -24 4 -19 4 L10 4 C14 4 16 2 16 -1 C16 -4 14 -6 10 -6 Z" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.6"
+                  stroke-linejoin="round"/>
+          </g></g>
+          <text x="150" y="126" font-size="11" font-weight="700" fill="var(--ablated-dk)" text-anchor="middle">related kinase</text>
+
+          <g transform="translate(248,70)"><g class="q-step" style="--i:2">
+            <path d="M-24 -26 C-10 -35 16 -35 24 -22 C28 -15 20 -10 9 -9 L-14 -9 C-25 -9 -29 -19 -24 -26 Z" fill="var(--ablated-bg)" stroke="var(--ablated)" stroke-width="2" stroke-dasharray="5 4"/>
+            <path d="M-20 7 C-2 4 19 6 27 16 C34 25 23 36 5 37 C-13 38 -29 30 -30 18 C-31 11 -26 8 -20 7 Z" fill="var(--ablated-bg)" stroke="var(--ablated)" stroke-width="2" stroke-dasharray="5 4"/>
+            <path d="M-19 -6 C-24 -6 -24 4 -19 4 L10 4 C14 4 16 2 16 -1 C16 -4 14 -6 10 -6 Z" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.6"
+                  stroke-linejoin="round"/>
+          </g></g>
+          <text x="248" y="126" font-size="11" font-weight="700" fill="var(--ablated-dk)" text-anchor="middle">related kinase</text>
+
+          <!-- the clefts are the same shape, and the rule says so -->
+          <g class="q-step" style="--i:3">
+            <path d="M52 146 L52 157 M150 146 L150 157 M248 146 L248 157 M52 157 L248 157"
+                  fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <text x="150" y="175" font-size="10.5" font-weight="700" fill="var(--ink)" text-anchor="middle">
+              the ATP cleft: the same in all of them</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption><b>Why selectivity is hard.</b> A kinase is two lobes with a cleft between them,
+        and the drug binds in that cleft. The lobes differ from kinase to kinase; the cleft barely
+        does. A molecule cut to fit CDK2's cleft fits the neighbours' too, and no amount of extra
+        potency changes that.</figcaption>
+    </figure>
+
+    <p>Those relatives have their own jobs, so hitting them is not free. Unintended kinase activity
+      is a known source of toxicity, of dose limits that keep a drug below a useful concentration,
+      and of compounds that fail late and expensively.</p>
 
     <div class="callout">
       <strong class="callout__title">Potency is not the goal. Selectivity is.</strong>
