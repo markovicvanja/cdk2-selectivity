@@ -35,7 +35,7 @@ d.setAttribute('data-mode', m === 'full' ? 'full' : 'plain');}(document.document
 <!-- The only JS-only controls on the page. Hidden when JS is off so no dead buttons ship; the
      bottom bar then falls back to two columns (About · LinkedIn) instead of leaving a hole.
      Everything else (all seven sections, every <details>, every anchor) works without JS. -->
-<style>html:not(.js) .modeswitch,html:not(.js) [data-lightbox],html:not(.js) [data-expand-all],html:not(.js) [data-collapse-all],html:not(.js) [data-copy],html:not(.js) [data-open-contents]{display:none}
+<style>html:not(.js) .modeswitch,html:not(.js) .progress,html:not(.js) [data-lightbox],html:not(.js) [data-expand-all],html:not(.js) [data-collapse-all],html:not(.js) [data-copy],html:not(.js) [data-open-contents]{display:none}
 html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 
 <link rel="stylesheet" href="styles.css">
@@ -43,6 +43,8 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 <body>
 
 <a class="skip-link" href="#main">Skip to content</a>
+
+<div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
 
 <div class="layout">
 
@@ -127,6 +129,15 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     </div>
 
     <p class="note">Same candidate pool. Same selection budget. Only the antitarget term changes.</p>
+
+    <!-- The three colours are load-bearing in every chart below, and the stat cards
+         above are their first appearance. Stated once, here, rather than inferred. -->
+    <div class="legend">
+      <span class="legend__label">Throughout:</span>
+      <span class="chip chip--target">CDK2, the target</span>
+      <span class="chip chip--guided">antitargets, the benefit</span>
+      <span class="chip chip--ablated">the cost</span>
+    </div>
 
     <a class="jump" href="#results">See the controlled experiment ↓</a>
 
@@ -1814,8 +1825,12 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     actually doing inside each pool? What does the change cost in predicted potency? And how far does
     the preference reach into what the generator produces later?</p>
 
-    <p class="note"><b>The five words this section leans on</b>, in case you came straight here
-    from the top.
+    <!-- Definitions, not findings. A closed disclosure in BOTH modes: a reader who
+         landed straight on Results needs them, but not ahead of the first result. -->
+    <details class="disclosure disclosure--always">
+      <summary class="disclosure__summary">The five words this section leans on</summary>
+      <div class="disclosure__body">
+    <p class="note">In case you came straight here from the top.
     <b>Docking</b> places a molecule in a protein pocket <i>in silico</i> and scores the fit; every
     number here is predicted, never measured.
     <b>z</b> is a docking score expressed against that receptor's own baseline, so one receptor's
@@ -1825,6 +1840,8 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     <b>AT-ablated</b> is β<sub>AT</sub> = 0 (<a href="#score-j">what J rewards</a>).
     <b>Scored</b> receptors enter that penalty; <b>held-out</b> receptors are measured but never
     optimised against (<a href="#reliable-useful">why the split</a>).</p>
+      </div>
+    </details>
 
     <div class="disclosure-controls">
       <button class="btn btn--quiet" type="button" data-expand-all>Expand all</button>
@@ -2889,6 +2906,22 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     b.addEventListener('click', function () { setMode(b.dataset.setMode, true); });
   });
   setMode(document.documentElement.getAttribute('data-mode'), false);
+
+  /* Reading progress. Decorative, aria-hidden: the real position cue for assistive
+     tech is the heading structure. rAF-throttled so it costs nothing while scrolling. */
+  var bar = document.querySelector('.progress__bar'), ticking = false;
+  if (bar) {
+    var paint = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, window.scrollY / max) : 0) + ')';
+      ticking = false;
+    };
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(paint); }
+    }, { passive: true });
+    window.addEventListener('resize', paint);
+    paint();
+  }
 
   /* Contents sheet: native <dialog> gives backdrop, Escape, focus trap and focus return. */
   var sheet = document.getElementById('contents');

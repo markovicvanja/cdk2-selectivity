@@ -455,6 +455,33 @@ abbr[title] { text-decoration: underline dotted; cursor: help; }
 .hero__actions { align-items: center; gap: var(--sp-2); }
 .btn__meta { font-weight: 400; font-size: var(--fs-small); opacity: 0.85; }
 
+/* Reading progress. The page is ~24,000px, so "how much is left" is a real
+   question. Fixed hairline, above everything except the sheet and lightbox. */
+.progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--rule);
+  z-index: 50;
+}
+.progress__bar {
+  display: block;
+  height: 100%;
+  background: var(--target);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* Colour key. Reuses the chips, which already carry the three semantic fills. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+}
+.legend__label { font-size: var(--fs-small); color: var(--faint); }
+.legend .chip { font-size: 0.8125rem; padding: 0.25rem 0.6rem; }
+
 /* The travelling dash on a loop diagram. Give the <path> pathLength="100" in
    the markup so the dash maths is resolution-free. Animated in §16. */
 .loop-trace { stroke-dasharray: 16 84; stroke-dashoffset: 0; }
@@ -1443,7 +1470,7 @@ figcaption b, figcaption strong { color: var(--ink); }
    that exist only to justify the numbers. Set on <html> before first paint.
    -------------------------------------------------------------------------- */
 
-html[data-mode="plain"] .disclosure,
+html[data-mode="plain"] .disclosure:not(.disclosure--always),
 html[data-mode="plain"] .disclosure-controls,
 html[data-mode="plain"] [data-tech] { display: none; }
 
@@ -1533,6 +1560,7 @@ html[data-mode="plain"] [data-tech] { display: none; }
 
   body { padding-bottom: 0; color: #000; background: #fff; }
 
+  .progress,
   .skip-link, .bottombar, .sidebar, .sheet, .lightbox,
   .disclosure-controls, .figure__hint, .table-scroll__hint,
   .btn--quiet, .jump { display: none !important; }
@@ -1567,7 +1595,7 @@ html[data-mode="plain"] [data-tech] { display: none; }
   .card, .table th, .table td { border-color: #999; }
 
   /* Print is always the full document, whatever the reader was viewing. */
-  html[data-mode="plain"] .disclosure,
+  html[data-mode="plain"] .disclosure:not(.disclosure--always),
   html[data-mode="plain"] .disclosure-controls,
   html[data-mode="plain"] [data-tech] { display: revert; }
   .modeswitch { display: none !important; }
