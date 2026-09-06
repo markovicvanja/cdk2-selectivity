@@ -435,6 +435,12 @@ abbr[title] { text-decoration: underline dotted; cursor: help; }
   .btn-row .btn { flex: 1 1 100%; }
 }
 
+/* The hero's action row: the poster download, then the jump into the results.
+   Most visitors arrive from the QR code on the printed poster and want the PDF,
+   so it must not be a scroll away. */
+.hero__actions { align-items: center; gap: var(--sp-2); }
+.btn__meta { font-weight: 400; font-size: var(--fs-small); opacity: 0.85; }
+
 /* A forward link to another section: "see the controlled experiment ↓". */
 .jump {
   display: inline-flex;

@@ -57,7 +57,8 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
       <p class="modeswitch__hint" data-mode-hint></p>
     </div>
 
-    <a class="btn btn--primary" href="https://www.linkedin.com/in/vanja-markovi%C4%87-507b88348/">LinkedIn</a>
+    <a class="btn btn--primary" href="poster.pdf" download>Download poster</a>
+    <a class="btn btn--ghost" href="https://www.linkedin.com/in/vanja-markovi%C4%87-507b88348/">LinkedIn</a>
     <ul class="sidebar__list">
       <li><a class="sidebar__link" href="#overview">Overview</a></li>
       <li><a class="sidebar__link" href="#background">Why this matters</a></li>
@@ -87,6 +88,12 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     <p class="hero__hook"><b>Potency ≠ Selectivity.</b> Related kinases share the same ATP
       pocket, so a molecule tuned only for CDK2 will often hit them too.</p>
 
+    <div class="btn-row hero__actions">
+      <a class="btn btn--primary" href="poster.pdf" download>
+        <span aria-hidden="true">↓</span>Download the poster
+        <span class="btn__meta">PDF, 200 KB</span></a>
+    </div>
+
     <!-- The three numbers come before the prose. The full claim is the lede below; a
          reader standing at the poster should not have to scroll to reach a result. -->
     <div class="stats">
@@ -114,6 +121,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     <p class="note">Same candidate pool. Same selection budget. Only the antitarget term changes.</p>
 
     <a class="jump" href="#results">See the controlled experiment ↓</a>
+
 
     <p class="lede">Adding explicit off-target docking information to a generative molecular
       workflow changes which molecules it keeps: all eight evaluated antitarget kinases shift
@@ -2649,7 +2657,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
       Resources
     </h2>
 
-    <h4>This work</h4>
+    <h3 id="res-this-work">This work</h3>
     <ul class="linklist">
       <li>
         <a href="poster.pdf">Conference poster<span class="linklist__src">PDF</span></a>
@@ -2666,7 +2674,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
       </li>
     </ul>
 
-    <h4>Built on</h4>
+    <h3 id="res-built-on">Built on</h3>
     <ul class="linklist">
       <li>
         <a href="https://github.com/IFilella/ALGen-1">ALGen implementation<span class="linklist__src">GitHub</span></a>
@@ -2711,7 +2719,7 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
     </ul>
     <p class="small">Also used: Clustal Omega, Gemmi, scikit-learn, SciPy.</p>
 
-    <h4>Institutions</h4>
+    <h3 id="res-institutions">Institutions</h3>
     <ul class="linklist">
       <li><a href="https://www.bsc.es/">Barcelona Supercomputing Center<span class="linklist__src">bsc.es</span></a></li>
       <li><a href="https://www.ub.edu/">Universitat de Barcelona<span class="linklist__src">ub.edu</span></a></li>
@@ -2842,9 +2850,11 @@ html:not(.js) .bottombar__inner{grid-template-columns:repeat(2,1fr)}</style>
 
     <li><a class="sheet__link" href="#limits"><span class="sheet__num">7</span>Limits and next steps</a></li>
 
-    <li><a class="sheet__link" href="#about"><span class="sheet__num">8</span>About and resources</a>
+    <li><a class="sheet__link" href="#about"><span class="sheet__num">8</span>Resources</a>
       <ul class="sheet__sub">
-        <li><a class="sheet__sublink" href="#about-resources">Resources</a></li>
+        <li><a class="sheet__sublink" href="#res-this-work">This work</a></li>
+        <li><a class="sheet__sublink" href="#res-built-on">Built on</a></li>
+        <li><a class="sheet__sublink" href="#res-institutions">Institutions</a></li>
         <li><a class="sheet__sublink" href="#about-cite">Cite this work</a></li>
       </ul>
     </li>
